@@ -16,64 +16,79 @@ export async function POST(req: NextRequest) {
     const propietarios: Propietario[] = body.propietarios ?? [];
     const bovinos: Bovino[] = body.bovinos ?? [];
     const eventos: EventoInput[] = body.eventos ?? [];
+    console.log('[IMPORT] sizes', { propietarios: propietarios.length, bovinos: bovinos.length, eventos: eventos.length });
 
     // Helper para validar UUID
     const isUuid = (v?: string) => !!v && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
 
     // Upsert/insert propietarios (si el id no es UUID, lo omitimos para que Supabase lo genere)
     if (propietarios.length) {
-      const sanitized = propietarios.map(p => ({
-        // no enviar id si no es uuid
-        ...(isUuid(p.id) ? { id: p.id } : {}),
-        nombre: p.nombre,
-        telefono: p.telefono ?? null,
-        email: p.email ?? null,
-      }));
-      const { error } = await supabaseAdmin.from('propietarios').insert(sanitized);
-      if (error) throw error;
+      try {
+        const sanitized = propietarios.map(p => ({
+          ...(isUuid(p.id) ? { id: p.id } : {}),
+          nombre: p.nombre,
+          telefono: p.telefono ?? null,
+          email: p.email ?? null,
+        }));
+        const { error } = await supabaseAdmin
+          .from('propietarios')
+          .upsert(sanitized, { onConflict: 'id', ignoreDuplicates: true });
+        if (error) throw error;
+      } catch (e: any) {
+        console.error('[IMPORT] propietarios failed:', e?.message || e);
+        return NextResponse.json({ error: e?.message || 'Error propietarios', stage: 'propietarios' }, { status: 500 });
+      }
     }
 
     // Upsert bovinos (onConflict por codigo o id si lo traes)
     if (bovinos.length) {
-      // Preferimos conflicto por codigo para evitar duplicados
-      const { error } = await supabaseAdmin.from('bovinos').upsert(bovinos, { onConflict: 'codigo' });
-      if (error) throw error;
+      try {
+        const { error } = await supabaseAdmin.from('bovinos').upsert(bovinos, { onConflict: 'codigo' });
+        if (error) throw error;
+      } catch (e: any) {
+        console.error('[IMPORT] bovinos failed:', e?.message || e);
+        return NextResponse.json({ error: e?.message || 'Error bovinos', stage: 'bovinos' }, { status: 500 });
+      }
     }
 
     // Insert eventos (normalmente no upsert, conservamos histórico)
     let skippedEventos = 0;
     if (eventos.length) {
-      const eventosToInsert: any[] = [];
-      for (const ev of eventos) {
-        let bovinoId = ev.bovino_id;
-        if (!bovinoId && ev.bovino_codigo) {
-          const { data: bovinoRow, error: findErr } = await supabaseAdmin
-            .from('bovinos')
-            .select('id')
-            .eq('codigo', ev.bovino_codigo)
-            .maybeSingle();
-          if (findErr) throw findErr;
-          bovinoId = bovinoRow?.id;
+      try {
+        const eventosToInsert: any[] = [];
+        for (const ev of eventos) {
+          let bovinoId = ev.bovino_id;
+          if (!bovinoId && ev.bovino_codigo) {
+            const { data: bovinoRow, error: findErr } = await supabaseAdmin
+              .from('bovinos')
+              .select('id')
+              .eq('codigo', ev.bovino_codigo)
+              .maybeSingle();
+            if (findErr) throw findErr;
+            bovinoId = bovinoRow?.id;
+          }
+          if (!bovinoId) {
+            skippedEventos++;
+            continue; // evitar null en bovino_id
+          }
+          const row: any = {
+            bovino_id: bovinoId,
+            tipo: ev.tipo || 'Registro',
+            fecha: ev.fecha || new Date().toISOString().slice(0, 10),
+            descripcion: ev.descripcion ?? null,
+          };
+          if (isUuid(ev.id)) row.id = ev.id;
+          eventosToInsert.push(row);
         }
-        if (!bovinoId) {
-          skippedEventos++;
-          continue; // evitar null en bovino_id
+        if (eventosToInsert.length) {
+          const { error } = await supabaseAdmin
+            .from('eventos')
+            .upsert(eventosToInsert, { onConflict: 'id', ignoreDuplicates: true });
+          if (error) throw error;
         }
-        const row: any = {
-          bovino_id: bovinoId,
-          tipo: ev.tipo,
-          fecha: ev.fecha,
-          descripcion: ev.descripcion ?? null,
-        };
-        // sólo mandar id si es uuid
-        if (isUuid(ev.id)) row.id = ev.id;
-        eventosToInsert.push(row);
-      }
-      if (eventosToInsert.length) {
-        const { error } = await supabaseAdmin
-          .from('eventos')
-          .upsert(eventosToInsert, { onConflict: 'id', ignoreDuplicates: true });
-        if (error) throw error;
+      } catch (e: any) {
+        console.error('[IMPORT] eventos failed:', e?.message || e);
+        return NextResponse.json({ error: e?.message || 'Error eventos', stage: 'eventos' }, { status: 500 });
       }
     }
 
