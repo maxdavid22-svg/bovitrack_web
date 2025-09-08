@@ -33,7 +33,12 @@ export default function Home() {
   return (
     <main style={{ padding: 16, maxWidth: 720, margin: '0 auto' }}>
       <h1>BoviTrack Web</h1>
-      <a href="/nuevo" style={{ display: 'inline-block', marginBottom: 12 }}>Nuevo Bovino</a>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+        <a href="/bovinos">Bovinos</a>
+        <a href="/propietarios">Propietarios</a>
+        <a href="/eventos">Eventos</a>
+        <a href="/nuevo">Nuevo Bovino</a>
+      </div>
       {loading ? (
         <div>Cargando…</div>
       ) : (
