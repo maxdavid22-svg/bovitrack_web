@@ -70,7 +70,9 @@ export async function POST(req: NextRequest) {
         eventosToInsert.push(row);
       }
       if (eventosToInsert.length) {
-        const { error } = await supabaseAdmin.from('eventos').insert(eventosToInsert);
+        const { error } = await supabaseAdmin
+          .from('eventos')
+          .upsert(eventosToInsert, { onConflict: 'id', ignoreDuplicates: true });
         if (error) throw error;
       }
     }
