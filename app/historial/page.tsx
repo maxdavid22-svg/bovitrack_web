@@ -103,7 +103,7 @@ export default function HistorialPage() {
         // Mapear la respuesta de Supabase para extraer el objeto bovino individual
         const eventosMapeados = (data || []).map((evento: any) => ({
           ...evento,
-          bovinos: evento.bovinos[0] || { codigo: '', nombre: null, raza: null, sexo: null, estado: null }
+          bovinos: evento.bovinos || { codigo: '', nombre: null, raza: null, sexo: null, estado: null }
         }));
         setEventos(eventosMapeados);
       }
