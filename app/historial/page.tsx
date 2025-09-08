@@ -64,7 +64,7 @@ export default function HistorialPage() {
           descripcion,
           bovino_id,
           created_at,
-          bovinos!inner(codigo, nombre, raza, sexo, estado)
+          bovinos(codigo, nombre, raza, sexo, estado)
         `)
         .order('fecha', { ascending: false })
         .order('created_at', { ascending: false });

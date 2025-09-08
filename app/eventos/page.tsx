@@ -38,7 +38,7 @@ export default function EventosPage() {
           descripcion,
           bovino_id,
           created_at,
-          bovinos!inner(codigo, nombre, raza, estado)
+          bovinos(codigo, nombre, raza, estado)
         `)
         .order('fecha', { ascending: false })
         .order('created_at', { ascending: false })
