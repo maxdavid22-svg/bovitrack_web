@@ -100,7 +100,12 @@ export default function HistorialPage() {
       if (error) {
         console.error('Error cargando eventos:', error);
       } else {
-        setEventos(data || []);
+        // Mapear la respuesta de Supabase para extraer el objeto bovino individual
+        const eventosMapeados = (data || []).map((evento: any) => ({
+          ...evento,
+          bovinos: evento.bovinos[0] || { codigo: '', nombre: null, raza: null, sexo: null, estado: null }
+        }));
+        setEventos(eventosMapeados);
       }
     } catch (error) {
       console.error('Error:', error);
