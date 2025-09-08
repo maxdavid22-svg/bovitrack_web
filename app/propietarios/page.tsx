@@ -22,12 +22,14 @@ export default function PropietariosPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-4">Propietarios</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-semibold">Propietarios</h1>
+      </div>
       {loading ? 'Cargando…' : (
-        <div className="bg-white border rounded overflow-hidden">
+        <div className="bg-white border rounded overflow-hidden shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-gray-100 text-left">
-              <tr>
+            <thead className="text-left">
+              <tr className="bg-amber-50 text-amber-900">
                 <th className="p-2">Nombre</th>
                 <th className="p-2">Teléfono</th>
                 <th className="p-2">Email</th>
@@ -35,7 +37,7 @@ export default function PropietariosPage() {
             </thead>
             <tbody>
               {items.map(i => (
-                <tr key={i.id} className="border-t">
+                <tr key={i.id} className="border-t hover:bg-gray-50">
                   <td className="p-2">{i.nombre}</td>
                   <td className="p-2">{i.telefono ?? '—'}</td>
                   <td className="p-2">{i.email ?? '—'}</td>
