@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Insert eventos (normalmente no upsert, conservamos histórico)
+    let skippedEventos = 0;
     if (eventos.length) {
       const eventosToInsert: any[] = [];
       for (const ev of eventos) {
@@ -43,6 +44,10 @@ export async function POST(req: NextRequest) {
             .maybeSingle();
           if (findErr) throw findErr;
           bovinoId = bovinoRow?.id;
+        }
+        if (!bovinoId) {
+          skippedEventos++;
+          continue; // evitar null en bovino_id
         }
         eventosToInsert.push({
           id: ev.id,
@@ -58,7 +63,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ ok: true, counts: { propietarios: propietarios.length, bovinos: bovinos.length, eventos: eventos.length } }, { status: 200 });
+    return NextResponse.json({ ok: true, counts: { propietarios: propietarios.length, bovinos: bovinos.length, eventos_insertados: (eventos?.length || 0) - skippedEventos, eventos_omitidos: skippedEventos } }, { status: 200 });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message ?? 'Error' }, { status: 500 });
   }
