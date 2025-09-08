@@ -25,16 +25,38 @@ export async function POST(req: NextRequest) {
     // Upsert/insert propietarios (si el id no es UUID, lo omitimos para que Supabase lo genere)
     if (propietarios.length) {
       try {
-        const sanitized = propietarios.map(p => ({
-          ...(isUuid(p.id) ? { id: p.id } : {}),
-          nombre: p.nombre,
-          telefono: p.telefono ?? null,
-          email: p.email ?? null,
-        }));
-        const { error } = await supabaseAdmin
-          .from('propietarios')
-          .upsert(sanitized, { onConflict: 'id', ignoreDuplicates: true });
-        if (error) throw error;
+        for (const p of propietarios) {
+          const nombre = p.nombre;
+          const telefono = p.telefono ?? null;
+          const email = p.email ?? null;
+          // Si el id es UUID intentamos upsert por id
+          if (isUuid(p.id)) {
+            const { error } = await supabaseAdmin
+              .from('propietarios')
+              .upsert([{ id: p.id, nombre, telefono, email }], { onConflict: 'id', ignoreDuplicates: false });
+            if (error) throw error;
+          } else {
+            // Actualizar por nombre si existe, si no, insertar
+            const { data: existing, error: selErr } = await supabaseAdmin
+              .from('propietarios')
+              .select('id')
+              .eq('nombre', nombre)
+              .maybeSingle();
+            if (selErr) throw selErr;
+            if (existing?.id) {
+              const { error: updErr } = await supabaseAdmin
+                .from('propietarios')
+                .update({ telefono, email })
+                .eq('id', existing.id);
+              if (updErr) throw updErr;
+            } else {
+              const { error: insErr } = await supabaseAdmin
+                .from('propietarios')
+                .insert([{ nombre, telefono, email }]);
+              if (insErr) throw insErr;
+            }
+          }
+        }
       } catch (e: any) {
         console.error('[IMPORT] propietarios failed:', e?.message || e);
         return NextResponse.json({ error: e?.message || 'Error propietarios', stage: 'propietarios' }, { status: 500 });
