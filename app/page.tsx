@@ -31,24 +31,39 @@ export default function Home() {
   }, []);
 
   return (
-    <main style={{ padding: 16, maxWidth: 720, margin: '0 auto' }}>
-      <h1>BoviTrack Web</h1>
-      <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
-        <a href="/bovinos">Bovinos</a>
-        <a href="/propietarios">Propietarios</a>
-        <a href="/eventos">Eventos</a>
-        <a href="/nuevo">Nuevo Bovino</a>
+    <div>
+      <h1 className="text-2xl font-semibold mb-4">BoviTrack Web</h1>
+      <div className="flex gap-3 mb-4">
+        <a className="px-3 py-2 bg-blue-600 text-white rounded" href="/nuevo">Nuevo Bovino</a>
+        <a className="px-3 py-2 border rounded" href="/bovinos">Ver Bovinos</a>
+        <a className="px-3 py-2 border rounded" href="/propietarios">Ver Propietarios</a>
+        <a className="px-3 py-2 border rounded" href="/eventos">Ver Eventos</a>
       </div>
       {loading ? (
-        <div>Cargando…</div>
+        <div> Cargando… </div>
       ) : (
-        <ul>
-          {bovinos.map(b => (
-            <li key={b.id}>{b.codigo} — {b.nombre ?? 'Sin nombre'} — {b.estado}</li>
-          ))}
-        </ul>
+        <div className="bg-white border rounded overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-100 text-left">
+              <tr>
+                <th className="p-2">Código</th>
+                <th className="p-2">Nombre</th>
+                <th className="p-2">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bovinos.map(b => (
+                <tr key={b.id} className="border-t">
+                  <td className="p-2">{b.codigo}</td>
+                  <td className="p-2">{b.nombre ?? 'Sin nombre'}</td>
+                  <td className="p-2">{b.estado ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-    </main>
+    </div>
   );
 }
 

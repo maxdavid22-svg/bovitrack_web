@@ -21,31 +21,33 @@ export default function EventosPage() {
   }, []);
 
   return (
-    <main style={{ maxWidth: 900, margin: '0 auto' }}>
-      <h1>Eventos</h1>
+    <div>
+      <h1 className="text-2xl font-semibold mb-4">Eventos</h1>
       {loading ? 'Cargando…' : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'left' }}>Fecha</th>
-              <th style={{ textAlign: 'left' }}>Tipo</th>
-              <th style={{ textAlign: 'left' }}>Descripción</th>
-              <th style={{ textAlign: 'left' }}>Bovino ID</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map(i => (
-              <tr key={i.id}>
-                <td>{i.fecha}</td>
-                <td>{i.tipo}</td>
-                <td>{i.descripcion ?? '—'}</td>
-                <td>{i.bovino_id}</td>
+        <div className="bg-white border rounded overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-100 text-left">
+              <tr>
+                <th className="p-2">Fecha</th>
+                <th className="p-2">Tipo</th>
+                <th className="p-2">Descripción</th>
+                <th className="p-2">Bovino ID</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {items.map(i => (
+                <tr key={i.id} className="border-t">
+                  <td className="p-2">{i.fecha}</td>
+                  <td className="p-2">{i.tipo}</td>
+                  <td className="p-2">{i.descripcion ?? '—'}</td>
+                  <td className="p-2">{i.bovino_id}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-    </main>
+    </div>
   );
 }
 

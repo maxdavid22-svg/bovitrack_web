@@ -21,29 +21,31 @@ export default function PropietariosPage() {
   }, []);
 
   return (
-    <main style={{ maxWidth: 900, margin: '0 auto' }}>
-      <h1>Propietarios</h1>
+    <div>
+      <h1 className="text-2xl font-semibold mb-4">Propietarios</h1>
       {loading ? 'Cargando…' : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'left' }}>Nombre</th>
-              <th style={{ textAlign: 'left' }}>Teléfono</th>
-              <th style={{ textAlign: 'left' }}>Email</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map(i => (
-              <tr key={i.id}>
-                <td>{i.nombre}</td>
-                <td>{i.telefono ?? '—'}</td>
-                <td>{i.email ?? '—'}</td>
+        <div className="bg-white border rounded overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-100 text-left">
+              <tr>
+                <th className="p-2">Nombre</th>
+                <th className="p-2">Teléfono</th>
+                <th className="p-2">Email</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {items.map(i => (
+                <tr key={i.id} className="border-t">
+                  <td className="p-2">{i.nombre}</td>
+                  <td className="p-2">{i.telefono ?? '—'}</td>
+                  <td className="p-2">{i.email ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-    </main>
+    </div>
   );
 }
 

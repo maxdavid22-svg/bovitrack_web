@@ -6,16 +6,22 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body style={{ fontFamily: 'system-ui, Arial, sans-serif' }}>
-        <nav style={{ display: 'flex', gap: 16, padding: 12, borderBottom: '1px solid #eee' }}>
-          <a href="/">Inicio</a>
-          <a href="/bovinos">Bovinos</a>
-          <a href="/propietarios">Propietarios</a>
-          <a href="/eventos">Eventos</a>
-        </nav>
-        <div style={{ padding: 16 }}>
+      <body className="min-h-screen bg-gray-50 text-gray-900">
+        <link rel="stylesheet" href="/app/globals.css" />
+        <header className="bg-white border-b">
+          <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-6">
+            <div className="font-semibold">BoviTrack</div>
+            <nav className="flex gap-4 text-sm">
+              <a className="hover:text-blue-600" href="/">Inicio</a>
+              <a className="hover:text-blue-600" href="/bovinos">Bovinos</a>
+              <a className="hover:text-blue-600" href="/propietarios">Propietarios</a>
+              <a className="hover:text-blue-600" href="/eventos">Eventos</a>
+            </nav>
+          </div>
+        </header>
+        <main className="max-w-6xl mx-auto px-4 py-6">
           {children}
-        </div>
+        </main>
       </body>
     </html>
   );

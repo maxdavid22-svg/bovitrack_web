@@ -17,29 +17,31 @@ export default function BovinosPage() {
   }, []);
 
   return (
-    <main style={{ padding: 16, maxWidth: 900, margin: '0 auto' }}>
-      <h1>Bovinos</h1>
+    <div>
+      <h1 className="text-2xl font-semibold mb-4">Bovinos</h1>
       {loading ? 'Cargando…' : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'left' }}>Código</th>
-              <th style={{ textAlign: 'left' }}>Nombre</th>
-              <th style={{ textAlign: 'left' }}>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map(i => (
-              <tr key={i.id}>
-                <td>{i.codigo}</td>
-                <td>{i.nombre ?? '—'}</td>
-                <td>{i.estado ?? '—'}</td>
+        <div className="bg-white border rounded overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-100 text-left">
+              <tr>
+                <th className="p-2">Código</th>
+                <th className="p-2">Nombre</th>
+                <th className="p-2">Estado</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {items.map(i => (
+                <tr key={i.id} className="border-t">
+                  <td className="p-2">{i.codigo}</td>
+                  <td className="p-2">{i.nombre ?? '—'}</td>
+                  <td className="p-2">{i.estado ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-    </main>
+    </div>
   );
 }
 
