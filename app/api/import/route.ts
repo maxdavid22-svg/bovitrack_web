@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 type Propietario = { id?: string; nombre: string; telefono?: string | null; email?: string | null };
 type Bovino = { id?: string; codigo: string; nombre?: string | null; raza?: string | null; sexo?: string | null; fecha_nacimiento?: string | null; estado?: string | null; propietario_id?: string | null };
-type Evento = { id?: string; bovino_id: string; tipo: string; fecha: string; descripcion?: string | null };
+type EventoInput = { id?: string; bovino_id?: string; bovino_codigo?: string; tipo: string; fecha: string; descripcion?: string | null };
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const propietarios: Propietario[] = body.propietarios ?? [];
     const bovinos: Bovino[] = body.bovinos ?? [];
-    const eventos: Evento[] = body.eventos ?? [];
+    const eventos: EventoInput[] = body.eventos ?? [];
 
     // Upsert propietarios
     if (propietarios.length) {
@@ -32,8 +32,30 @@ export async function POST(req: NextRequest) {
 
     // Insert eventos (normalmente no upsert, conservamos histórico)
     if (eventos.length) {
-      const { error } = await supabaseAdmin.from('eventos').insert(eventos);
-      if (error) throw error;
+      const eventosToInsert: any[] = [];
+      for (const ev of eventos) {
+        let bovinoId = ev.bovino_id;
+        if (!bovinoId && ev.bovino_codigo) {
+          const { data: bovinoRow, error: findErr } = await supabaseAdmin
+            .from('bovinos')
+            .select('id')
+            .eq('codigo', ev.bovino_codigo)
+            .maybeSingle();
+          if (findErr) throw findErr;
+          bovinoId = bovinoRow?.id;
+        }
+        eventosToInsert.push({
+          id: ev.id,
+          bovino_id: bovinoId,
+          tipo: ev.tipo,
+          fecha: ev.fecha,
+          descripcion: ev.descripcion ?? null,
+        });
+      }
+      if (eventosToInsert.length) {
+        const { error } = await supabaseAdmin.from('eventos').insert(eventosToInsert);
+        if (error) throw error;
+      }
     }
 
     return NextResponse.json({ ok: true, counts: { propietarios: propietarios.length, bovinos: bovinos.length, eventos: eventos.length } }, { status: 200 });
