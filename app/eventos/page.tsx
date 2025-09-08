@@ -8,7 +8,7 @@ type EventoCompleto = {
   fecha: string;
   descripcion: string | null;
   bovino_id: string;
-  bovino: {
+  bovinos: {
     codigo: string;
     nombre: string | null;
     raza: string | null;
@@ -38,10 +38,7 @@ export default function EventosPage() {
           descripcion,
           bovino_id,
           created_at,
-          bovino:codigo,
-          bovino:nombre,
-          bovino:raza,
-          bovino:estado
+          bovinos!inner(codigo, nombre, raza, estado)
         `)
         .order('fecha', { ascending: false })
         .order('created_at', { ascending: false })
@@ -66,8 +63,8 @@ export default function EventosPage() {
 
   const eventosFiltrados = items.filter(evento => {
     const cumpleFiltroTexto = 
-      evento.bovino.codigo.toLowerCase().includes(filtro.toLowerCase()) ||
-      (evento.bovino.nombre && evento.bovino.nombre.toLowerCase().includes(filtro.toLowerCase())) ||
+      evento.bovinos.codigo.toLowerCase().includes(filtro.toLowerCase()) ||
+      (evento.bovinos.nombre && evento.bovinos.nombre.toLowerCase().includes(filtro.toLowerCase())) ||
       (evento.descripcion && evento.descripcion.toLowerCase().includes(filtro.toLowerCase()));
     
     const cumpleFiltroTipo = !filtroTipo || evento.tipo === filtroTipo;
@@ -156,17 +153,17 @@ export default function EventosPage() {
                       </div>
                     </td>
                     <td className="p-4">
-                      <div className="font-mono text-blue-600">{evento.bovino.codigo}</div>
+                      <div className="font-mono text-blue-600">{evento.bovinos.codigo}</div>
                       <div className="text-gray-600 text-xs">
-                        {evento.bovino.nombre || 'Sin nombre'} • {evento.bovino.raza || 'Sin raza'}
+                        {evento.bovinos.nombre || 'Sin nombre'} • {evento.bovinos.raza || 'Sin raza'}
                       </div>
                       <div className="text-xs">
                         <span className={`px-2 py-1 rounded-full ${
-                          evento.bovino.estado === 'Activo' ? 'bg-green-100 text-green-800' : 
-                          evento.bovino.estado === 'Inactivo' ? 'bg-red-100 text-red-800' : 
+                          evento.bovinos.estado === 'Activo' ? 'bg-green-100 text-green-800' : 
+                          evento.bovinos.estado === 'Inactivo' ? 'bg-red-100 text-red-800' : 
                           'bg-gray-100 text-gray-800'
                         }`}>
-                          {evento.bovino.estado || '—'}
+                          {evento.bovinos.estado || '—'}
                         </span>
                       </div>
                     </td>
