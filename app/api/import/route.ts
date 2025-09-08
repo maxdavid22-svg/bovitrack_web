@@ -17,9 +17,19 @@ export async function POST(req: NextRequest) {
     const bovinos: Bovino[] = body.bovinos ?? [];
     const eventos: EventoInput[] = body.eventos ?? [];
 
-    // Upsert propietarios
+    // Helper para validar UUID
+    const isUuid = (v?: string) => !!v && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+
+    // Upsert/insert propietarios (si el id no es UUID, lo omitimos para que Supabase lo genere)
     if (propietarios.length) {
-      const { error } = await supabaseAdmin.from('propietarios').upsert(propietarios, { onConflict: 'id' });
+      const sanitized = propietarios.map(p => ({
+        // no enviar id si no es uuid
+        ...(isUuid(p.id) ? { id: p.id } : {}),
+        nombre: p.nombre,
+        telefono: p.telefono ?? null,
+        email: p.email ?? null,
+      }));
+      const { error } = await supabaseAdmin.from('propietarios').insert(sanitized);
       if (error) throw error;
     }
 
@@ -49,13 +59,15 @@ export async function POST(req: NextRequest) {
           skippedEventos++;
           continue; // evitar null en bovino_id
         }
-        eventosToInsert.push({
-          id: ev.id,
+        const row: any = {
           bovino_id: bovinoId,
           tipo: ev.tipo,
           fecha: ev.fecha,
           descripcion: ev.descripcion ?? null,
-        });
+        };
+        // sólo mandar id si es uuid
+        if (isUuid(ev.id)) row.id = ev.id;
+        eventosToInsert.push(row);
       }
       if (eventosToInsert.length) {
         const { error } = await supabaseAdmin.from('eventos').insert(eventosToInsert);
