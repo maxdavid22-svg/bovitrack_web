@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 type Propietario = { id?: string; nombre: string; telefono?: string | null; email?: string | null };
@@ -77,7 +78,14 @@ export async function POST(req: NextRequest) {
             fecha: ev.fecha || new Date().toISOString().slice(0, 10),
             descripcion: ev.descripcion ?? null,
           };
-          if (isUuid(ev.id)) row.id = ev.id;
+          if (isUuid(ev.id)) {
+            row.id = ev.id;
+          } else {
+            // Generar un UUID determinístico por contenido para idempotencia
+            const base = `${bovinoId}|${row.tipo}|${row.fecha}|${row.descripcion ?? ''}`;
+            const hex = crypto.createHash('md5').update(base).digest('hex');
+            row.id = `${hex.substring(0,8)}-${hex.substring(8,12)}-${hex.substring(12,16)}-${hex.substring(16,20)}-${hex.substring(20,32)}`;
+          }
           eventosToInsert.push(row);
         }
         if (eventosToInsert.length) {
