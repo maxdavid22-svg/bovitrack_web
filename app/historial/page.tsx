@@ -149,7 +149,7 @@ export default function HistorialPage() {
         // Mapear la respuesta de Supabase para extraer el objeto bovino individual
         let eventosMapeados = (data || []).map((evento: any) => ({
           ...evento,
-          bovinos: evento.bovinos || { codigo: '', nombre: null, raza: null, sexo: null, estado: null, tag_rfid: null }
+          bovinos: evento.bovinos || { codigo: '', nombre: null, raza: null, sexo: null, estado: null, tag_rfid: null, nombre_propietario: null }
         }));
 
         // Aplicar filtros adicionales
@@ -577,7 +577,7 @@ export default function HistorialPage() {
             >
               <option value="">Todos los propietarios</option>
               {Array.from(new Set(eventos.map(e => e.bovinos.nombre_propietario).filter(p => p))).map(propietario => (
-                <option key={propietario} value={propietario}>{propietario}</option>
+                <option key={propietario} value={propietario!}>{propietario}</option>
               ))}
             </select>
           </div>
