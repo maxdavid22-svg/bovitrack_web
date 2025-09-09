@@ -50,6 +50,8 @@ export async function POST(req: NextRequest) {
     const bovinos: Bovino[] = body.bovinos ?? [];
     const eventos: EventoInput[] = body.eventos ?? [];
     console.log('[IMPORT] sizes', { propietarios: propietarios.length, bovinos: bovinos.length, eventos: eventos.length });
+    console.log('[IMPORT] propietarios sample:', propietarios.slice(0, 2));
+    console.log('[IMPORT] bovinos sample:', bovinos.slice(0, 2));
 
     // Helper para validar UUID
     const isUuid = (v?: string) => !!v && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
@@ -74,11 +76,13 @@ export async function POST(req: NextRequest) {
           
           // Si el id es UUID intentamos upsert por id
           if (isUuid(p.id)) {
+            console.log('[IMPORT] Upserting propietario by UUID:', p.id);
             const { error } = await supabaseAdmin
               .from('propietarios')
               .upsert([{ id: p.id, ...propietarioData }], { onConflict: 'id', ignoreDuplicates: false });
             if (error) throw error;
           } else {
+            console.log('[IMPORT] Propietario ID not UUID, using name lookup:', p.id, p.nombre);
             // Actualizar por nombre si existe, si no, insertar
             const { data: existing, error: selErr } = await supabaseAdmin
               .from('propietarios')
@@ -109,6 +113,7 @@ export async function POST(req: NextRequest) {
     // Upsert bovinos (onConflict por codigo o id si lo traes)
     if (bovinos.length) {
       try {
+        console.log('[IMPORT] Processing bovinos with propietarios:', bovinos.map(b => ({ codigo: b.codigo, id_propietario: b.id_propietario, nombre_propietario: b.nombre_propietario })));
         const { error } = await supabaseAdmin.from('bovinos').upsert(bovinos, { onConflict: 'codigo' });
         if (error) throw error;
       } catch (e: any) {
