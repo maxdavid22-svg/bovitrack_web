@@ -151,7 +151,7 @@ export default function BovinosPage() {
                         {bovino.peso_actual ? (
                           <div className="font-medium">{bovino.peso_actual} kg</div>
                         ) : (
-                          <div className="text-gray-400">Sin peso</div>
+                          <div className="text-gray-400 text-xs">Sin peso</div>
                         )}
                         {bovino.peso_nacimiento && (
                           <div className="text-xs text-gray-500">Nac: {bovino.peso_nacimiento} kg</div>
@@ -163,7 +163,7 @@ export default function BovinosPage() {
                         {bovino.nombre_propietario ? (
                           <div className="font-medium">{bovino.nombre_propietario}</div>
                         ) : (
-                          <div className="text-gray-400">Sin propietario</div>
+                          <div className="text-gray-400 text-xs">Sin propietario</div>
                         )}
                       </div>
                     </td>
@@ -172,7 +172,7 @@ export default function BovinosPage() {
                         {bovino.ubicacion_actual ? (
                           <div className="font-medium">{bovino.ubicacion_actual}</div>
                         ) : (
-                          <div className="text-gray-400">Sin ubicación</div>
+                          <div className="text-gray-400 text-xs">Sin ubicación</div>
                         )}
                         {bovino.color && (
                           <div className="text-xs text-gray-500">Color: {bovino.color}</div>
