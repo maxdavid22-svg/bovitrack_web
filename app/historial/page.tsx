@@ -24,6 +24,7 @@ type EventoCompleto = {
     raza: string | null;
     sexo: string | null;
     estado: string | null;
+    tag_rfid: string | null;
   };
   created_at: string;
 };
@@ -33,17 +34,19 @@ type Filtros = {
   tipo: string;
   fecha_desde: string;
   fecha_hasta: string;
+  solo_con_tag: boolean;
 };
 
 export default function HistorialPage() {
   const [eventos, setEventos] = useState<EventoCompleto[]>([]);
-  const [bovinos, setBovinos] = useState<{codigo: string, nombre: string | null}[]>([]);
+  const [bovinos, setBovinos] = useState<{codigo: string, nombre: string | null, tag_rfid: string | null}[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtros, setFiltros] = useState<Filtros>({
     bovino_codigo: '',
     tipo: '',
     fecha_desde: '',
-    fecha_hasta: ''
+    fecha_hasta: '',
+    solo_con_tag: false
   });
 
   useEffect(() => {
@@ -54,7 +57,7 @@ export default function HistorialPage() {
   const cargarBovinos = async () => {
     const { data, error } = await supabase
       .from('bovinos')
-      .select('codigo, nombre')
+      .select('codigo, nombre, tag_rfid')
       .order('codigo');
     
     if (!error) {
@@ -84,7 +87,7 @@ export default function HistorialPage() {
           destino,
           bovino_id,
           created_at,
-          bovinos(codigo, nombre, raza, sexo, estado)
+          bovinos(codigo, nombre, raza, sexo, estado, tag_rfid)
         `)
         .order('fecha', { ascending: false })
         .order('created_at', { ascending: false });
@@ -139,10 +142,16 @@ export default function HistorialPage() {
         console.log('=== FIN DEBUG ===');
         
         // Mapear la respuesta de Supabase para extraer el objeto bovino individual
-        const eventosMapeados = (data || []).map((evento: any) => ({
+        let eventosMapeados = (data || []).map((evento: any) => ({
           ...evento,
-          bovinos: evento.bovinos || { codigo: '', nombre: null, raza: null, sexo: null, estado: null }
+          bovinos: evento.bovinos || { codigo: '', nombre: null, raza: null, sexo: null, estado: null, tag_rfid: null }
         }));
+
+        // Aplicar filtro de Tag RFID si está activo
+        if (filtrosFinales.solo_con_tag) {
+          eventosMapeados = eventosMapeados.filter(evento => evento.bovinos.tag_rfid);
+        }
+
         setEventos(eventosMapeados);
       }
     } catch (error) {
@@ -161,7 +170,8 @@ export default function HistorialPage() {
       bovino_codigo: '',
       tipo: '',
       fecha_desde: '',
-      fecha_hasta: ''
+      fecha_hasta: '',
+      solo_con_tag: false
     };
     setFiltros(filtrosLimpios);
     cargarEventos(filtrosLimpios);
@@ -181,7 +191,7 @@ export default function HistorialPage() {
       </div>
 
       {/* Estadísticas modernas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
@@ -237,6 +247,28 @@ export default function HistorialPage() {
           </div>
           <div className="mt-2 text-xs text-purple-200">
             {eventos.length > 0 ? `${((eventos.filter(e => e.veterinario).length / eventos.length) * 100).toFixed(1)}% del total` : 'Sin datos'}
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-3xl font-bold">
+                {new Set(eventos.map(e => e.bovinos.codigo).filter(codigo => {
+                  const bovino = eventos.find(e => e.bovinos.codigo === codigo)?.bovinos;
+                  return bovino?.tag_rfid;
+                })).size}
+              </div>
+              <div className="text-indigo-100 text-sm">Con Tag RFID</div>
+            </div>
+            <div className="text-4xl opacity-80">🏷️</div>
+          </div>
+          <div className="mt-2 text-xs text-indigo-200">
+            {new Set(eventos.map(e => e.bovinos.codigo)).size > 0 ? 
+              `${((new Set(eventos.map(e => e.bovinos.codigo).filter(codigo => {
+                const bovino = eventos.find(e => e.bovinos.codigo === codigo)?.bovinos;
+                return bovino?.tag_rfid;
+              })).size / new Set(eventos.map(e => e.bovinos.codigo)).size) * 100).toFixed(1)}% de bovinos` : 'Sin datos'}
           </div>
         </div>
       </div>
@@ -325,6 +357,107 @@ export default function HistorialPage() {
         </div>
       </div>
 
+      {/* Estadísticas de Tag RFID */}
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <h2 className="text-lg font-semibold mb-4 text-gray-800">🏷️ Estadísticas de Tag RFID</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <h3 className="font-medium text-gray-700 mb-3">Distribución de Tags</h3>
+            <div className="space-y-3">
+              {(() => {
+                const bovinosUnicos = Array.from(new Set(eventos.map(e => e.bovinos.codigo)));
+                const conTag = bovinosUnicos.filter(codigo => {
+                  const bovino = eventos.find(e => e.bovinos.codigo === codigo)?.bovinos;
+                  return bovino?.tag_rfid;
+                }).length;
+                const sinTag = bovinosUnicos.length - conTag;
+                const total = bovinosUnicos.length;
+                
+                return (
+                  <>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="font-medium flex items-center">
+                          <span className="w-3 h-3 bg-indigo-500 rounded-full mr-2"></span>
+                          Con Tag RFID
+                        </span>
+                        <span className="text-gray-600">{conTag} ({total > 0 ? ((conTag / total) * 100).toFixed(1) : 0}%)</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div 
+                          className="h-3 rounded-full bg-indigo-500"
+                          style={{ width: `${total > 0 ? (conTag / total) * 100 : 0}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="font-medium flex items-center">
+                          <span className="w-3 h-3 bg-gray-400 rounded-full mr-2"></span>
+                          Sin Tag RFID
+                        </span>
+                        <span className="text-gray-600">{sinTag} ({total > 0 ? ((sinTag / total) * 100).toFixed(1) : 0}%)</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div 
+                          className="h-3 rounded-full bg-gray-400"
+                          style={{ width: `${total > 0 ? (sinTag / total) * 100 : 0}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-medium text-gray-700 mb-3">Bovinos con Tag RFID</h3>
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {(() => {
+                const bovinosConTag = Array.from(new Set(eventos.map(e => e.bovinos.codigo)))
+                  .filter(codigo => {
+                    const bovino = eventos.find(e => e.bovinos.codigo === codigo)?.bovinos;
+                    return bovino?.tag_rfid;
+                  })
+                  .map(codigo => {
+                    const bovino = eventos.find(e => e.bovinos.codigo === codigo)?.bovinos;
+                    const eventosBovino = eventos.filter(e => e.bovinos.codigo === codigo);
+                    return {
+                      codigo,
+                      nombre: bovino?.nombre,
+                      tag_rfid: bovino?.tag_rfid,
+                      eventos: eventosBovino.length
+                    };
+                  })
+                  .sort((a, b) => b.eventos - a.eventos)
+                  .slice(0, 10);
+
+                return bovinosConTag.map(bovino => (
+                  <div key={bovino.codigo} className="flex items-center justify-between p-3 bg-indigo-50 rounded-lg">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-3">
+                        <span className="text-indigo-600 font-semibold text-sm">🏷️</span>
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-800 text-sm">{bovino.codigo}</div>
+                        <div className="text-xs text-gray-500">{bovino.nombre || 'Sin nombre'}</div>
+                        <div className="text-xs text-indigo-600 font-mono">{bovino.tag_rfid}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-indigo-600">{bovino.eventos}</div>
+                      <div className="text-xs text-gray-500">eventos</div>
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Filtros modernos */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-6">
@@ -395,6 +528,29 @@ export default function HistorialPage() {
           </div>
         </div>
 
+        {/* Filtros adicionales */}
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setFiltros({...filtros, solo_con_tag: !filtros.solo_con_tag})}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                filtros.solo_con_tag 
+                  ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-200' 
+                  : 'bg-gray-100 text-gray-600 border-2 border-gray-200 hover:bg-gray-200'
+              }`}
+            >
+              <div className={`w-3 h-3 rounded-full ${filtros.solo_con_tag ? 'bg-indigo-500' : 'bg-gray-400'}`}></div>
+              <span>🏷️ Solo con Tag RFID</span>
+              <span className="text-xs bg-white px-2 py-1 rounded-full">
+                {new Set(eventos.map(e => e.bovinos.codigo).filter(codigo => {
+                  const bovino = eventos.find(e => e.bovinos.codigo === codigo)?.bovinos;
+                  return bovino?.tag_rfid;
+                })).size}
+              </span>
+            </button>
+          </div>
+        </div>
+
         {/* Botones de acción modernos */}
         <div className="flex flex-wrap gap-3">
           <button
@@ -419,7 +575,7 @@ export default function HistorialPage() {
         </div>
 
         {/* Indicadores de filtros activos */}
-        {(filtros.bovino_codigo || filtros.tipo || filtros.fecha_desde || filtros.fecha_hasta) && (
+        {(filtros.bovino_codigo || filtros.tipo || filtros.fecha_desde || filtros.fecha_hasta || filtros.solo_con_tag) && (
           <div className="mt-4 flex flex-wrap gap-2">
             {filtros.bovino_codigo && (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
@@ -460,6 +616,17 @@ export default function HistorialPage() {
                 <button
                   onClick={() => setFiltros({...filtros, fecha_hasta: ''})}
                   className="ml-2 text-orange-600 hover:text-orange-800"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {filtros.solo_con_tag && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-indigo-100 text-indigo-800">
+                🏷️ Solo con Tag RFID
+                <button
+                  onClick={() => setFiltros({...filtros, solo_con_tag: false})}
+                  className="ml-2 text-indigo-600 hover:text-indigo-800"
                 >
                   ×
                 </button>
@@ -509,7 +676,8 @@ export default function HistorialPage() {
                 <tr>
                   <th className="p-4 font-semibold text-gray-700">📅 Fecha/Hora</th>
                   <th className="p-4 font-semibold text-gray-700">🐄 Bovino</th>
-                  <th className="p-4 font-semibold text-gray-700">🏷️ Tipo</th>
+                  <th className="p-4 font-semibold text-gray-700">🏷️ Tag RFID</th>
+                  <th className="p-4 font-semibold text-gray-700">📋 Tipo</th>
                   <th className="p-4 font-semibold text-gray-700">📝 Detalles</th>
                   <th className="p-4 font-semibold text-gray-700">👨‍⚕️ Veterinario</th>
                   <th className="p-4 font-semibold text-gray-700">⏰ Registrado</th>
@@ -547,6 +715,17 @@ export default function HistorialPage() {
                           {evento.bovinos.estado || '—'}
                         </span>
                       </div>
+                    </td>
+                    <td className="p-4">
+                      {evento.bovinos.tag_rfid ? (
+                        <div className="text-sm">
+                          <div className="font-mono text-indigo-600 font-semibold bg-indigo-50 px-2 py-1 rounded">
+                            {evento.bovinos.tag_rfid}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-xs text-gray-400 italic">Sin tag</div>
+                      )}
                     </td>
                     <td className="p-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -697,6 +876,11 @@ export default function HistorialPage() {
                   <div className="text-gray-600 text-sm mb-4">
                     <div className="font-medium">{bovino.nombre || 'Sin nombre'}</div>
                     <div className="text-xs text-gray-500">{bovino.raza || 'Sin raza'}</div>
+                    {bovino.tag_rfid && (
+                      <div className="text-xs text-indigo-600 font-mono bg-indigo-50 px-2 py-1 rounded mt-1">
+                        🏷️ {bovino.tag_rfid}
+                      </div>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
