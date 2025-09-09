@@ -325,18 +325,25 @@ export default function HistorialPage() {
         </div>
       </div>
 
-      {/* Filtros */}
+      {/* Filtros modernos */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">Filtros de Búsqueda</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-gray-800">🔍 Filtros de Trazabilidad</h2>
+          <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+            {eventos.length} eventos encontrados
+          </div>
+        </div>
+
+        {/* Filtros principales */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Bovino
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              🐄 Bovino
             </label>
             <select
               value={filtros.bovino_codigo}
               onChange={(e) => setFiltros({...filtros, bovino_codigo: e.target.value})}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Todos los bovinos</option>
               {bovinos.map(b => (
@@ -348,13 +355,13 @@ export default function HistorialPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tipo de Evento
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              🏷️ Tipo de Evento
             </label>
             <select
               value={filtros.tipo}
               onChange={(e) => setFiltros({...filtros, tipo: e.target.value})}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             >
               <option value="">Todos los tipos</option>
               {tiposEvento.map(tipo => (
@@ -364,92 +371,172 @@ export default function HistorialPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fecha Desde
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              📅 Fecha Desde
             </label>
             <input
               type="date"
               value={filtros.fecha_desde}
               onChange={(e) => setFiltros({...filtros, fecha_desde: e.target.value})}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fecha Hasta
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              📅 Fecha Hasta
             </label>
             <input
               type="date"
               value={filtros.fecha_hasta}
               onChange={(e) => setFiltros({...filtros, fecha_hasta: e.target.value})}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             />
           </div>
         </div>
 
-        <div className="flex gap-2 mt-4">
+        {/* Botones de acción modernos */}
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={aplicarFiltros}
-            className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition"
+            className="flex items-center space-x-2 px-6 py-3 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-all duration-200 shadow-md hover:shadow-lg"
           >
-            🔍 Aplicar Filtros
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span>Aplicar Filtros</span>
           </button>
+
           <button
             onClick={limpiarFiltros}
-            className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition"
+            className="flex items-center space-x-2 px-6 py-3 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-all duration-200 shadow-md hover:shadow-lg"
           >
-            🗑️ Limpiar
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            <span>Limpiar Filtros</span>
           </button>
         </div>
+
+        {/* Indicadores de filtros activos */}
+        {(filtros.bovino_codigo || filtros.tipo || filtros.fecha_desde || filtros.fecha_hasta) && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {filtros.bovino_codigo && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                🐄 {filtros.bovino_codigo}
+                <button
+                  onClick={() => setFiltros({...filtros, bovino_codigo: ''})}
+                  className="ml-2 text-blue-600 hover:text-blue-800"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {filtros.tipo && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                🏷️ {filtros.tipo}
+                <button
+                  onClick={() => setFiltros({...filtros, tipo: ''})}
+                  className="ml-2 text-green-600 hover:text-green-800"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {filtros.fecha_desde && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
+                📅 Desde: {filtros.fecha_desde}
+                <button
+                  onClick={() => setFiltros({...filtros, fecha_desde: ''})}
+                  className="ml-2 text-purple-600 hover:text-purple-800"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {filtros.fecha_hasta && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-orange-100 text-orange-800">
+                📅 Hasta: {filtros.fecha_hasta}
+                <button
+                  onClick={() => setFiltros({...filtros, fecha_hasta: ''})}
+                  className="ml-2 text-orange-600 hover:text-orange-800"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Resultados */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b">
-          <h2 className="text-xl font-semibold">
-            Eventos Encontrados ({eventos.length})
-          </h2>
+      {/* Resultados modernos */}
+      <div className="bg-white rounded-lg shadow-lg">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-800">
+              📋 Eventos de Trazabilidad
+            </h2>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                {eventos.length} eventos
+              </div>
+              {eventos.length > 0 && (
+                <div className="text-xs text-gray-500">
+                  Último: {new Date(eventos[0]?.fecha).toLocaleDateString('es-ES')}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {loading ? (
-          <div className="p-6 text-center">Cargando eventos...</div>
+          <div className="p-12 text-center">
+            <div className="inline-flex items-center space-x-2 text-gray-500">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-600"></div>
+              <span>Cargando eventos...</span>
+            </div>
+          </div>
         ) : eventos.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
-            No se encontraron eventos con los filtros aplicados
+          <div className="p-12 text-center text-gray-500">
+            <div className="text-6xl mb-4">📋</div>
+            <h3 className="text-lg font-medium mb-2">No se encontraron eventos</h3>
+            <p className="text-sm">Intenta ajustar los filtros de búsqueda</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-left">
+              <thead className="bg-gradient-to-r from-teal-50 to-teal-100 text-left">
                 <tr>
-                  <th className="p-4 font-semibold text-gray-700">Fecha/Hora</th>
-                  <th className="p-4 font-semibold text-gray-700">Bovino</th>
-                  <th className="p-4 font-semibold text-gray-700">Tipo</th>
-                  <th className="p-4 font-semibold text-gray-700">Detalles</th>
-                  <th className="p-4 font-semibold text-gray-700">Veterinario</th>
-                  <th className="p-4 font-semibold text-gray-700">Registrado</th>
+                  <th className="p-4 font-semibold text-gray-700">📅 Fecha/Hora</th>
+                  <th className="p-4 font-semibold text-gray-700">🐄 Bovino</th>
+                  <th className="p-4 font-semibold text-gray-700">🏷️ Tipo</th>
+                  <th className="p-4 font-semibold text-gray-700">📝 Detalles</th>
+                  <th className="p-4 font-semibold text-gray-700">👨‍⚕️ Veterinario</th>
+                  <th className="p-4 font-semibold text-gray-700">⏰ Registrado</th>
                 </tr>
               </thead>
               <tbody>
-                {eventos.map(evento => (
-                  <tr key={evento.id} className="border-t hover:bg-teal-50 transition-colors">
+                {eventos.map((evento, index) => (
+                  <tr key={evento.id} className={`border-t hover:bg-teal-50 transition-all duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                     <td className="p-4">
                       <div className="font-semibold text-gray-800">
                         {new Date(evento.fecha).toLocaleDateString('es-ES')}
                       </div>
                       {evento.hora && (
-                        <div className="text-xs text-gray-500">
-                          🕐 {evento.hora}
+                        <div className="text-xs text-gray-500 flex items-center mt-1">
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {evento.hora}
                         </div>
                       )}
                     </td>
                     <td className="p-4">
-                      <div className="font-mono text-blue-600 font-semibold">{evento.bovinos.codigo}</div>
-                      <div className="text-gray-600 text-xs">
+                      <div className="font-mono text-blue-600 font-semibold text-sm">{evento.bovinos.codigo}</div>
+                      <div className="text-gray-600 text-xs mt-1">
                         {evento.bovinos.nombre || 'Sin nombre'} • {evento.bovinos.raza || 'Sin raza'}
                       </div>
-                      <div className="text-xs">
+                      <div className="mt-2">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           evento.bovinos.estado === 'Activo' ? 'bg-green-100 text-green-800' : 
                           evento.bovinos.estado === 'Vendido' ? 'bg-blue-100 text-blue-800' :
@@ -477,69 +564,91 @@ export default function HistorialPage() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <div className="space-y-1 max-w-xs">
+                      <div className="space-y-2 max-w-xs">
                         {evento.descripcion && (
-                          <div className="text-sm text-gray-800">{evento.descripcion}</div>
+                          <div className="text-sm text-gray-800 font-medium">{evento.descripcion}</div>
                         )}
-                        {evento.medicamento && (
-                          <div className="text-xs">
-                            <span className="font-medium text-gray-600">💊 Medicamento:</span> {evento.medicamento}
-                          </div>
-                        )}
-                        {evento.dosis && (
-                          <div className="text-xs">
-                            <span className="font-medium text-gray-600">📏 Dosis:</span> {evento.dosis}
-                          </div>
-                        )}
-                        {evento.peso_kg && (
-                          <div className="text-xs">
-                            <span className="font-medium text-gray-600">⚖️ Peso:</span> {evento.peso_kg} kg
-                          </div>
-                        )}
-                        {evento.costo && (
-                          <div className="text-xs">
-                            <span className="font-medium text-gray-600">💰 Costo:</span> ${evento.costo}
-                          </div>
-                        )}
-                        {evento.ubicacion && (
-                          <div className="text-xs">
-                            <span className="font-medium text-gray-600">📍 Ubicación:</span> {evento.ubicacion}
-                          </div>
-                        )}
+                        <div className="grid grid-cols-1 gap-1">
+                          {evento.medicamento && (
+                            <div className="text-xs flex items-center">
+                              <span className="text-gray-500 mr-2">💊</span>
+                              <span className="font-medium text-gray-600">Medicamento:</span>
+                              <span className="ml-1">{evento.medicamento}</span>
+                            </div>
+                          )}
+                          {evento.dosis && (
+                            <div className="text-xs flex items-center">
+                              <span className="text-gray-500 mr-2">📏</span>
+                              <span className="font-medium text-gray-600">Dosis:</span>
+                              <span className="ml-1">{evento.dosis}</span>
+                            </div>
+                          )}
+                          {evento.peso_kg && (
+                            <div className="text-xs flex items-center">
+                              <span className="text-gray-500 mr-2">⚖️</span>
+                              <span className="font-medium text-gray-600">Peso:</span>
+                              <span className="ml-1">{evento.peso_kg} kg</span>
+                            </div>
+                          )}
+                          {evento.costo && (
+                            <div className="text-xs flex items-center">
+                              <span className="text-gray-500 mr-2">💰</span>
+                              <span className="font-medium text-gray-600">Costo:</span>
+                              <span className="ml-1">${evento.costo}</span>
+                            </div>
+                          )}
+                          {evento.ubicacion && (
+                            <div className="text-xs flex items-center">
+                              <span className="text-gray-500 mr-2">📍</span>
+                              <span className="font-medium text-gray-600">Ubicación:</span>
+                              <span className="ml-1">{evento.ubicacion}</span>
+                            </div>
+                          )}
+                          {evento.comprador && (
+                            <div className="text-xs flex items-center">
+                              <span className="text-gray-500 mr-2">👤</span>
+                              <span className="font-medium text-gray-600">Comprador:</span>
+                              <span className="ml-1">{evento.comprador}</span>
+                            </div>
+                          )}
+                          {evento.destino && (
+                            <div className="text-xs flex items-center">
+                              <span className="text-gray-500 mr-2">📍</span>
+                              <span className="font-medium text-gray-600">Destino:</span>
+                              <span className="ml-1">{evento.destino}</span>
+                            </div>
+                          )}
+                        </div>
                         {evento.observaciones && (
-                          <div className="text-xs text-gray-500 italic">
+                          <div className="text-xs text-gray-500 italic bg-gray-50 p-2 rounded">
                             📝 {evento.observaciones}
                           </div>
                         )}
-                        {evento.comprador && (
-                          <div className="text-xs">
-                            <span className="font-medium text-gray-600">👤 Comprador:</span> {evento.comprador}
-                          </div>
-                        )}
-                        {evento.destino && (
-                          <div className="text-xs">
-                            <span className="font-medium text-gray-600">📍 Destino:</span> {evento.destino}
-                          </div>
-                        )}
                         {!evento.descripcion && !evento.medicamento && !evento.dosis && !evento.peso_kg && !evento.costo && !evento.ubicacion && !evento.observaciones && !evento.comprador && !evento.destino && (
-                          <div className="text-xs text-gray-400">Sin detalles</div>
+                          <div className="text-xs text-gray-400 italic">Sin detalles adicionales</div>
                         )}
                       </div>
                     </td>
                     <td className="p-4">
                       {evento.veterinario ? (
                         <div className="text-sm">
-                          <div className="font-medium text-gray-800">👨‍⚕️ {evento.veterinario}</div>
+                          <div className="font-medium text-gray-800 flex items-center">
+                            <span className="text-gray-500 mr-2">👨‍⚕️</span>
+                            {evento.veterinario}
+                          </div>
                         </div>
                       ) : (
-                        <div className="text-xs text-gray-400">Sin veterinario</div>
+                        <div className="text-xs text-gray-400 italic">Sin veterinario</div>
                       )}
                     </td>
                     <td className="p-4 text-gray-500 text-xs">
                       <div className="font-medium">
                         {new Date(evento.created_at).toLocaleDateString('es-ES')}
                       </div>
-                      <div className="text-xs">
+                      <div className="text-xs flex items-center mt-1">
+                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                         {new Date(evento.created_at).toLocaleTimeString('es-ES', { 
                           hour: '2-digit', 
                           minute: '2-digit' 
@@ -554,27 +663,83 @@ export default function HistorialPage() {
         )}
       </div>
 
-      {/* Resumen por bovino */}
+      {/* Resumen por bovino moderno */}
       {eventos.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">Resumen por Bovino</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-800">📊 Resumen por Bovino</h3>
+            <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+              {Array.from(new Set(eventos.map(e => e.bovinos.codigo))).length} bovinos únicos
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from(new Set(eventos.map(e => e.bovinos.codigo))).map(codigo => {
               const eventosBovino = eventos.filter(e => e.bovinos.codigo === codigo);
               const bovino = eventosBovino[0].bovinos;
               const tiposUnicos = new Set(eventosBovino.map(e => e.tipo));
+              const ultimoEvento = eventosBovino[0];
               
               return (
-                <div key={codigo} className="border rounded-lg p-4">
-                  <div className="font-mono text-blue-600 font-semibold">{codigo}</div>
-                  <div className="text-gray-600 text-sm mb-2">
-                    {bovino.nombre || 'Sin nombre'} • {bovino.raza || 'Sin raza'}
+                <div key={codigo} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-all duration-200 bg-gradient-to-br from-white to-gray-50">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="font-mono text-blue-600 font-semibold text-lg">{codigo}</div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      bovino.estado === 'Activo' ? 'bg-green-100 text-green-800' : 
+                      bovino.estado === 'Vendido' ? 'bg-blue-100 text-blue-800' :
+                      bovino.estado === 'Sacrificado' ? 'bg-red-100 text-red-800' :
+                      bovino.estado === 'Muerto' ? 'bg-gray-100 text-gray-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {bovino.estado || '—'}
+                    </span>
                   </div>
-                  <div className="text-sm">
-                    <div className="text-gray-500">Total eventos: {eventosBovino.length}</div>
-                    <div className="text-gray-500">Tipos: {Array.from(tiposUnicos).join(', ')}</div>
-                    <div className="text-gray-500">
-                      Último: {new Date(eventosBovino[0].fecha).toLocaleDateString('es-ES')}
+                  
+                  <div className="text-gray-600 text-sm mb-4">
+                    <div className="font-medium">{bovino.nombre || 'Sin nombre'}</div>
+                    <div className="text-xs text-gray-500">{bovino.raza || 'Sin raza'}</div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">📊 Total eventos:</span>
+                      <span className="font-semibold text-gray-800">{eventosBovino.length}</span>
+                    </div>
+                    
+                    <div className="text-sm">
+                      <span className="text-gray-600">🏷️ Tipos:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {Array.from(tiposUnicos).slice(0, 3).map(tipo => (
+                          <span key={tipo} className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            tipo === 'Registro' ? 'bg-blue-100 text-blue-800' :
+                            tipo === 'Vacunación' ? 'bg-green-100 text-green-800' :
+                            tipo === 'Tratamiento' ? 'bg-yellow-100 text-yellow-800' :
+                            tipo === 'Pesaje' ? 'bg-purple-100 text-purple-800' :
+                            tipo === 'Reproducción' ? 'bg-pink-100 text-pink-800' :
+                            tipo === 'Parto' ? 'bg-orange-100 text-orange-800' :
+                            tipo === 'Venta' ? 'bg-red-100 text-red-800' :
+                            tipo === 'Muerte' ? 'bg-gray-100 text-gray-800' :
+                            'bg-indigo-100 text-indigo-800'
+                          }`}>
+                            {tipo}
+                          </span>
+                        ))}
+                        {Array.from(tiposUnicos).length > 3 && (
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                            +{Array.from(tiposUnicos).length - 3}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">📅 Último evento:</span>
+                      <span className="font-medium text-gray-800">
+                        {new Date(ultimoEvento.fecha).toLocaleDateString('es-ES')}
+                      </span>
+                    </div>
+                    
+                    <div className="text-xs text-gray-500 pt-2 border-t border-gray-200">
+                      <span className="font-medium">Último tipo:</span> {ultimoEvento.tipo}
                     </div>
                   </div>
                 </div>
