@@ -10,16 +10,6 @@ type Bovino = {
   sexo: string | null;
   estado: string | null;
   fecha_nacimiento: string | null;
-  peso_nacimiento: number | null;
-  peso_actual: number | null;
-  color: string | null;
-  marcas: string | null;
-  id_propietario: string | null;
-  nombre_propietario: string | null;
-  ubicacion_actual: string | null;
-  coordenadas: string | null;
-  observaciones: string | null;
-  foto: string | null;
   created_at: string;
 };
 
@@ -36,7 +26,7 @@ export default function BovinosPage() {
     try {
       const { data, error } = await supabase
         .from('bovinos')
-        .select('id, codigo, nombre, raza, sexo, estado, fecha_nacimiento, peso_nacimiento, peso_actual, color, marcas, id_propietario, nombre_propietario, ubicacion_actual, coordenadas, observaciones, foto, created_at')
+        .select('id, codigo, nombre, raza, sexo, estado, fecha_nacimiento, created_at')
         .order('created_at', { ascending: false })
         .limit(200);
       
@@ -55,11 +45,7 @@ export default function BovinosPage() {
   const bovinosFiltrados = items.filter(bovino => 
     bovino.codigo.toLowerCase().includes(filtro.toLowerCase()) ||
     (bovino.nombre && bovino.nombre.toLowerCase().includes(filtro.toLowerCase())) ||
-    (bovino.raza && bovino.raza.toLowerCase().includes(filtro.toLowerCase())) ||
-    (bovino.color && bovino.color.toLowerCase().includes(filtro.toLowerCase())) ||
-    (bovino.marcas && bovino.marcas.toLowerCase().includes(filtro.toLowerCase())) ||
-    (bovino.nombre_propietario && bovino.nombre_propietario.toLowerCase().includes(filtro.toLowerCase())) ||
-    (bovino.ubicacion_actual && bovino.ubicacion_actual.toLowerCase().includes(filtro.toLowerCase()))
+    (bovino.raza && bovino.raza.toLowerCase().includes(filtro.toLowerCase()))
   );
 
   return (
@@ -120,9 +106,7 @@ export default function BovinosPage() {
                   <th className="p-4 font-medium">Raza</th>
                   <th className="p-4 font-medium">Sexo</th>
                   <th className="p-4 font-medium">Estado</th>
-                  <th className="p-4 font-medium">Peso</th>
-                  <th className="p-4 font-medium">Propietario</th>
-                  <th className="p-4 font-medium">Ubicación</th>
+                  <th className="p-4 font-medium">Fecha Nac.</th>
                   <th className="p-4 font-medium">Registrado</th>
                 </tr>
               </thead>
@@ -147,37 +131,10 @@ export default function BovinosPage() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <div className="text-sm">
-                        {bovino.peso_actual ? (
-                          <div className="font-medium">{bovino.peso_actual} kg</div>
-                        ) : (
-                          <div className="text-gray-400">Sin peso</div>
-                        )}
-                        {bovino.peso_nacimiento && (
-                          <div className="text-xs text-gray-500">Nac: {bovino.peso_nacimiento} kg</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="text-sm">
-                        {bovino.nombre_propietario ? (
-                          <div className="font-medium">{bovino.nombre_propietario}</div>
-                        ) : (
-                          <div className="text-gray-400">Sin propietario</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="text-sm">
-                        {bovino.ubicacion_actual ? (
-                          <div className="font-medium">{bovino.ubicacion_actual}</div>
-                        ) : (
-                          <div className="text-gray-400">Sin ubicación</div>
-                        )}
-                        {bovino.color && (
-                          <div className="text-xs text-gray-500">Color: {bovino.color}</div>
-                        )}
-                      </div>
+                      {bovino.fecha_nacimiento ? 
+                        new Date(bovino.fecha_nacimiento).toLocaleDateString('es-ES') : 
+                        '—'
+                      }
                     </td>
                     <td className="p-4 text-gray-500 text-xs">
                       {new Date(bovino.created_at).toLocaleDateString('es-ES')}

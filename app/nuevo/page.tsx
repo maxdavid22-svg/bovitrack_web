@@ -68,16 +68,6 @@ export default function Nuevo() {
         sexo,
         estado: estado || 'Activo',
         fecha_nacimiento: fechaNacimiento || null,
-        peso_nacimiento: pesoNacimiento ? parseFloat(pesoNacimiento) : null,
-        peso_actual: pesoActual ? parseFloat(pesoActual) : null,
-        color: color || null,
-        marcas: marcas || null,
-        id_propietario: idPropietario || null,
-        nombre_propietario: propietarioSeleccionado ? 
-          `${propietarioSeleccionado.nombre} ${propietarioSeleccionado.apellidos || ''}`.trim() : null,
-        ubicacion_actual: ubicacionActual || null,
-        coordenadas: coordenadas || null,
-        observaciones: observaciones || null,
       };
       
       const { error } = await supabase.from('bovinos').insert([payload]);
