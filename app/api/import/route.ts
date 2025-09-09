@@ -16,7 +16,26 @@ type Propietario = {
   departamento?: string | null;
   observaciones?: string | null;
 };
-type Bovino = { id?: string; codigo: string; nombre?: string | null; raza?: string | null; sexo?: string | null; fecha_nacimiento?: string | null; estado?: string | null; propietario_id?: string | null };
+type Bovino = { 
+  id?: string; 
+  codigo: string; 
+  nombre?: string | null; 
+  raza?: string | null; 
+  sexo?: string | null; 
+  fecha_nacimiento?: string | null; 
+  estado?: string | null; 
+  propietario_id?: string | null;
+  peso_nacimiento?: number | null;
+  peso_actual?: number | null;
+  color?: string | null;
+  marcas?: string | null;
+  id_propietario?: string | null;
+  nombre_propietario?: string | null;
+  ubicacion_actual?: string | null;
+  coordenadas?: string | null;
+  observaciones?: string | null;
+  foto?: string | null;
+};
 type EventoInput = { id?: string; bovino_id?: string; bovino_codigo?: string; tipo: string; fecha: string; descripcion?: string | null };
 
 export async function POST(req: NextRequest) {
