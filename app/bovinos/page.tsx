@@ -29,6 +29,7 @@ export default function BovinosPage() {
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState('');
   const [mostrarTagRfid, setMostrarTagRfid] = useState(false);
+  const [soloConTag, setSoloConTag] = useState(false);
 
   useEffect(() => {
     cargarBovinos();
@@ -54,16 +55,28 @@ export default function BovinosPage() {
     }
   };
 
-  const bovinosFiltrados = items.filter(bovino => 
-    bovino.codigo.toLowerCase().includes(filtro.toLowerCase()) ||
-    (bovino.nombre && bovino.nombre.toLowerCase().includes(filtro.toLowerCase())) ||
-    (bovino.raza && bovino.raza.toLowerCase().includes(filtro.toLowerCase())) ||
-    (bovino.color && bovino.color.toLowerCase().includes(filtro.toLowerCase())) ||
-    (bovino.marcas && bovino.marcas.toLowerCase().includes(filtro.toLowerCase())) ||
-    (bovino.nombre_propietario && bovino.nombre_propietario.toLowerCase().includes(filtro.toLowerCase())) ||
-    (bovino.ubicacion_actual && bovino.ubicacion_actual.toLowerCase().includes(filtro.toLowerCase())) ||
-    (bovino.tag_rfid && bovino.tag_rfid.toLowerCase().includes(filtro.toLowerCase()))
-  );
+  const bovinosFiltrados = items.filter(bovino => {
+    // Filtro por Tag RFID
+    if (soloConTag && !bovino.tag_rfid) {
+      return false;
+    }
+    
+    // Filtro de búsqueda
+    if (filtro) {
+      return (
+        bovino.codigo.toLowerCase().includes(filtro.toLowerCase()) ||
+        (bovino.nombre && bovino.nombre.toLowerCase().includes(filtro.toLowerCase())) ||
+        (bovino.raza && bovino.raza.toLowerCase().includes(filtro.toLowerCase())) ||
+        (bovino.color && bovino.color.toLowerCase().includes(filtro.toLowerCase())) ||
+        (bovino.marcas && bovino.marcas.toLowerCase().includes(filtro.toLowerCase())) ||
+        (bovino.nombre_propietario && bovino.nombre_propietario.toLowerCase().includes(filtro.toLowerCase())) ||
+        (bovino.ubicacion_actual && bovino.ubicacion_actual.toLowerCase().includes(filtro.toLowerCase())) ||
+        (bovino.tag_rfid && bovino.tag_rfid.toLowerCase().includes(filtro.toLowerCase()))
+      );
+    }
+    
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -263,37 +276,105 @@ export default function BovinosPage() {
         </div>
       </div>
 
-      {/* Filtros y estadísticas */}
+      {/* Filtros modernos */}
       <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Filtros</h2>
-          <div className="text-sm text-gray-600">
-            Mostrando {bovinosFiltrados.length} de {items.length} bovinos
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-gray-800">🔍 Filtros y Búsqueda</h2>
+          <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+            {bovinosFiltrados.length} de {items.length} bovinos
           </div>
         </div>
         
-        <div className="flex gap-4">
-          <div className="flex-1">
+        {/* Barra de búsqueda */}
+        <div className="mb-6">
+          <div className="relative">
             <input
               type="text"
               placeholder="Buscar por código, nombre, raza, Tag RFID..."
               value={filtro}
               onChange={(e) => setFiltro(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
             />
-          </div>
-          <div className="flex items-center">
-            <label className="flex items-center space-x-2 text-sm">
-              <input
-                type="checkbox"
-                checked={mostrarTagRfid}
-                onChange={(e) => setMostrarTagRfid(e.target.checked)}
-                className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-              />
-              <span className="text-gray-700">Mostrar Tag RFID</span>
-            </label>
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
           </div>
         </div>
+
+        {/* Filtros con botones modernos */}
+        <div className="flex flex-wrap gap-3">
+          {/* Filtro por Tag RFID */}
+          <button
+            onClick={() => setSoloConTag(!soloConTag)}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              soloConTag 
+                ? 'bg-purple-100 text-purple-700 border-2 border-purple-200' 
+                : 'bg-gray-100 text-gray-600 border-2 border-gray-200 hover:bg-gray-200'
+            }`}
+          >
+            <div className={`w-3 h-3 rounded-full ${soloConTag ? 'bg-purple-500' : 'bg-gray-400'}`}></div>
+            <span>🏷️ Solo con Tag RFID</span>
+            <span className="text-xs bg-white px-2 py-1 rounded-full">
+              {items.filter(b => b.tag_rfid).length}
+            </span>
+          </button>
+
+          {/* Mostrar/Ocultar Tag RFID */}
+          <button
+            onClick={() => setMostrarTagRfid(!mostrarTagRfid)}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              mostrarTagRfid 
+                ? 'bg-blue-100 text-blue-700 border-2 border-blue-200' 
+                : 'bg-gray-100 text-gray-600 border-2 border-gray-200 hover:bg-gray-200'
+            }`}
+          >
+            <div className={`w-3 h-3 rounded-full ${mostrarTagRfid ? 'bg-blue-500' : 'bg-gray-400'}`}></div>
+            <span>👁️ Mostrar Tag RFID</span>
+          </button>
+
+          {/* Limpiar filtros */}
+          {(filtro || soloConTag) && (
+            <button
+              onClick={() => {
+                setFiltro('');
+                setSoloConTag(false);
+              }}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium bg-red-100 text-red-700 border-2 border-red-200 hover:bg-red-200 transition-all duration-200"
+            >
+              <span>🗑️ Limpiar filtros</span>
+            </button>
+          )}
+        </div>
+
+        {/* Indicadores de filtros activos */}
+        {(filtro || soloConTag) && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {filtro && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                🔍 "{filtro}"
+                <button
+                  onClick={() => setFiltro('')}
+                  className="ml-2 text-green-600 hover:text-green-800"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {soloConTag && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
+                🏷️ Solo con Tag RFID
+                <button
+                  onClick={() => setSoloConTag(false)}
+                  className="ml-2 text-purple-600 hover:text-purple-800"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Tabla de bovinos */}
