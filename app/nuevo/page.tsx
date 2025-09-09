@@ -12,6 +12,7 @@ type Propietario = {
 
 export default function Nuevo() {
   const [codigo, setCodigo] = useState('');
+  const [tagRfid, setTagRfid] = useState('');
   const [nombre, setNombre] = useState('');
   const [raza, setRaza] = useState('');
   const [sexo, setSexo] = useState<'Macho' | 'Hembra' | ''>('');
@@ -63,6 +64,7 @@ export default function Nuevo() {
       
       const payload: any = {
         codigo,
+        tag_rfid: tagRfid || null,
         nombre: nombre || null,
         raza: raza || null,
         sexo,
@@ -134,6 +136,19 @@ export default function Nuevo() {
                   onChange={e => setCodigo(e.target.value)}
                   placeholder="Ej: BOV-001"
                   required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tag RFID
+                </label>
+                <input 
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500" 
+                  value={tagRfid} 
+                  onChange={e => setTagRfid(e.target.value)}
+                  placeholder="ID del tag RFID"
                 />
               </div>
               

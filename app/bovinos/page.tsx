@@ -20,6 +20,7 @@ type Bovino = {
   coordenadas: string | null;
   observaciones: string | null;
   foto: string | null;
+  tag_rfid: string | null;
   created_at: string;
 };
 
@@ -27,6 +28,7 @@ export default function BovinosPage() {
   const [items, setItems] = useState<Bovino[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState('');
+  const [mostrarTagRfid, setMostrarTagRfid] = useState(false);
 
   useEffect(() => {
     cargarBovinos();
@@ -36,7 +38,7 @@ export default function BovinosPage() {
     try {
       const { data, error } = await supabase
         .from('bovinos')
-        .select('id, codigo, nombre, raza, sexo, estado, fecha_nacimiento, peso_nacimiento, peso_actual, color, marcas, id_propietario, nombre_propietario, ubicacion_actual, coordenadas, observaciones, foto, created_at')
+        .select('id, codigo, nombre, raza, sexo, estado, fecha_nacimiento, peso_nacimiento, peso_actual, color, marcas, id_propietario, nombre_propietario, ubicacion_actual, coordenadas, observaciones, foto, tag_rfid, created_at')
         .order('created_at', { ascending: false })
         .limit(200);
       
@@ -59,7 +61,8 @@ export default function BovinosPage() {
     (bovino.color && bovino.color.toLowerCase().includes(filtro.toLowerCase())) ||
     (bovino.marcas && bovino.marcas.toLowerCase().includes(filtro.toLowerCase())) ||
     (bovino.nombre_propietario && bovino.nombre_propietario.toLowerCase().includes(filtro.toLowerCase())) ||
-    (bovino.ubicacion_actual && bovino.ubicacion_actual.toLowerCase().includes(filtro.toLowerCase()))
+    (bovino.ubicacion_actual && bovino.ubicacion_actual.toLowerCase().includes(filtro.toLowerCase())) ||
+    (bovino.tag_rfid && bovino.tag_rfid.toLowerCase().includes(filtro.toLowerCase()))
   );
 
   return (
@@ -131,6 +134,20 @@ export default function BovinosPage() {
               <p className="text-sm font-medium text-gray-600">Con Peso</p>
               <p className="text-2xl font-bold text-gray-900">
                 {items.filter(b => b.peso_actual).length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <div className="text-2xl">🏷️</div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Con Tag RFID</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {items.filter(b => b.tag_rfid).length}
               </p>
             </div>
           </div>
@@ -259,11 +276,22 @@ export default function BovinosPage() {
           <div className="flex-1">
             <input
               type="text"
-              placeholder="Buscar por código, nombre o raza..."
+              placeholder="Buscar por código, nombre, raza, Tag RFID..."
               value={filtro}
               onChange={(e) => setFiltro(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
             />
+          </div>
+          <div className="flex items-center">
+            <label className="flex items-center space-x-2 text-sm">
+              <input
+                type="checkbox"
+                checked={mostrarTagRfid}
+                onChange={(e) => setMostrarTagRfid(e.target.checked)}
+                className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+              />
+              <span className="text-gray-700">Mostrar Tag RFID</span>
+            </label>
           </div>
         </div>
       </div>
@@ -282,6 +310,7 @@ export default function BovinosPage() {
               <thead className="bg-gray-50 text-left">
                 <tr>
                   <th className="p-4 font-medium">Código</th>
+                  {mostrarTagRfid && <th className="p-4 font-medium">Tag RFID</th>}
                   <th className="p-4 font-medium">Nombre</th>
                   <th className="p-4 font-medium">Raza</th>
                   <th className="p-4 font-medium">Sexo</th>
@@ -298,6 +327,19 @@ export default function BovinosPage() {
                     <td className="p-4">
                       <div className="font-mono text-blue-600 font-semibold">{bovino.codigo}</div>
                     </td>
+                    {mostrarTagRfid && (
+                      <td className="p-4">
+                        <div className="text-sm">
+                          {bovino.tag_rfid ? (
+                            <div className="font-mono text-purple-600 font-semibold bg-purple-50 px-2 py-1 rounded">
+                              {bovino.tag_rfid}
+                            </div>
+                          ) : (
+                            <div className="text-gray-400 text-xs">Sin tag</div>
+                          )}
+                        </div>
+                      </td>
+                    )}
                     <td className="p-4">
                       <div className="font-medium">{bovino.nombre || 'Sin nombre'}</div>
                     </td>
