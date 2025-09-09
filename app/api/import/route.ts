@@ -19,6 +19,7 @@ type Propietario = {
 type Bovino = { 
   id?: string; 
   codigo: string; 
+  tag_rfid?: string | null;
   nombre?: string | null; 
   raza?: string | null; 
   sexo?: string | null; 
