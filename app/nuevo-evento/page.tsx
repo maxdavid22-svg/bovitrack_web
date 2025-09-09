@@ -128,14 +128,17 @@ export default function NuevoEventoPage() {
   };
 
   const generateEventId = (bovinoCodigo: string, tipo: string, fecha: string, descripcion: string): string => {
-    const content = `${bovinoCodigo}-${tipo}-${fecha}-${descripcion || ''}`;
-    let hash = 0;
-    for (let i = 0; i < content.length; i++) {
-      const char = content.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
+    // Generar un UUID v4 válido usando crypto.randomUUID si está disponible
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
     }
-    return `evt_${Math.abs(hash).toString(36)}`;
+    
+    // Fallback: generar UUID v4 manualmente
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
   };
 
   const bovinoSeleccionado = bovinos.find(b => b.codigo === form.bovino_codigo);
