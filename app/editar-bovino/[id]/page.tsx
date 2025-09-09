@@ -41,6 +41,15 @@ export default function EditarBovinoPage() {
   const [propietarios, setPropietarios] = useState<Propietario[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [estadoOriginal, setEstadoOriginal] = useState<string>('');
+
+  // Mapeo de estados a tipos de evento
+  const mapeoEstadosEventos: { [key: string]: string } = {
+    'Sacrificado': 'Sacrificio',
+    'Vendido': 'Venta',
+    'Muerto': 'Muerte',
+    'Activo': 'Activación'
+  };
 
   // Estados del formulario
   const [codigo, setCodigo] = useState('');
@@ -87,6 +96,7 @@ export default function EditarBovinoPage() {
         setRaza(data.raza || '');
         setSexo(data.sexo || '');
         setEstado(data.estado || '');
+        setEstadoOriginal(data.estado || ''); // Guardar estado original
         setFechaNacimiento(data.fecha_nacimiento || '');
         setPesoNacimiento(data.peso_nacimiento?.toString() || '');
         setPesoActual(data.peso_actual?.toString() || '');
@@ -165,6 +175,30 @@ export default function EditarBovinoPage() {
       }
 
       console.log('Bovino actualizado exitosamente:', updateData);
+
+      // Crear evento automático si cambió el estado
+      if (estado !== estadoOriginal && mapeoEstadosEventos[estado]) {
+        const tipoEvento = mapeoEstadosEventos[estado];
+        const descripcion = `Cambio de estado: ${estadoOriginal} → ${estado}`;
+        
+        console.log('Creando evento automático:', { tipoEvento, descripcion });
+        
+        const { error: eventoError } = await supabase
+          .from('eventos')
+          .insert({
+            bovino_id: bovinoId,
+            tipo: tipoEvento,
+            fecha: new Date().toISOString().split('T')[0], // Fecha actual
+            descripcion: descripcion
+          });
+
+        if (eventoError) {
+          console.error('Error creando evento automático:', eventoError);
+          alert('Bovino actualizado, pero hubo un error al crear el evento de cambio de estado');
+        } else {
+          console.log('Evento automático creado exitosamente');
+        }
+      }
 
       alert('Bovino actualizado exitosamente');
       router.push('/bovinos');
