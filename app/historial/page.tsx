@@ -25,6 +25,7 @@ type EventoCompleto = {
     sexo: string | null;
     estado: string | null;
     tag_rfid: string | null;
+    nombre_propietario: string | null;
   };
   created_at: string;
 };
@@ -35,6 +36,8 @@ type Filtros = {
   fecha_desde: string;
   fecha_hasta: string;
   solo_con_tag: boolean;
+  propietario: string;
+  estado_bovino: string;
 };
 
 export default function HistorialPage() {
@@ -46,7 +49,9 @@ export default function HistorialPage() {
     tipo: '',
     fecha_desde: '',
     fecha_hasta: '',
-    solo_con_tag: false
+    solo_con_tag: false,
+    propietario: '',
+    estado_bovino: ''
   });
 
   useEffect(() => {
@@ -87,7 +92,7 @@ export default function HistorialPage() {
           destino,
           bovino_id,
           created_at,
-          bovinos(codigo, nombre, raza, sexo, estado, tag_rfid)
+          bovinos(codigo, nombre, raza, sexo, estado, tag_rfid, nombre_propietario)
         `)
         .order('fecha', { ascending: false })
         .order('created_at', { ascending: false });
@@ -147,9 +152,21 @@ export default function HistorialPage() {
           bovinos: evento.bovinos || { codigo: '', nombre: null, raza: null, sexo: null, estado: null, tag_rfid: null }
         }));
 
-        // Aplicar filtro de Tag RFID si está activo
+        // Aplicar filtros adicionales
         if (filtrosFinales.solo_con_tag) {
           eventosMapeados = eventosMapeados.filter(evento => evento.bovinos.tag_rfid);
+        }
+
+        if (filtrosFinales.propietario) {
+          eventosMapeados = eventosMapeados.filter(evento => 
+            evento.bovinos.nombre_propietario === filtrosFinales.propietario
+          );
+        }
+
+        if (filtrosFinales.estado_bovino) {
+          eventosMapeados = eventosMapeados.filter(evento => 
+            evento.bovinos.estado === filtrosFinales.estado_bovino
+          );
         }
 
         setEventos(eventosMapeados);
@@ -171,7 +188,9 @@ export default function HistorialPage() {
       tipo: '',
       fecha_desde: '',
       fecha_hasta: '',
-      solo_con_tag: false
+      solo_con_tag: false,
+      propietario: '',
+      estado_bovino: ''
     };
     setFiltros(filtrosLimpios);
     cargarEventos(filtrosLimpios);
@@ -180,6 +199,10 @@ export default function HistorialPage() {
   const tiposEvento = [
     'Registro', 'Vacunación', 'Tratamiento', 'Pesaje', 'Reproducción',
     'Parto', 'Venta', 'Muerte', 'Traslado', 'Otro'
+  ];
+
+  const estadosBovino = [
+    'Activo', 'Vendido', 'Muerto', 'Sacrificado'
   ];
 
   return (
@@ -191,7 +214,7 @@ export default function HistorialPage() {
       </div>
 
       {/* Estadísticas modernas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
         <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
@@ -269,6 +292,22 @@ export default function HistorialPage() {
                 const bovino = eventos.find(e => e.bovinos.codigo === codigo)?.bovinos;
                 return bovino?.tag_rfid;
               })).size / new Set(eventos.map(e => e.bovinos.codigo)).size) * 100).toFixed(1)}% de bovinos` : 'Sin datos'}
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-3xl font-bold">
+                {new Set(eventos.map(e => e.bovinos.nombre_propietario).filter(p => p)).size}
+              </div>
+              <div className="text-amber-100 text-sm">Propietarios Activos</div>
+            </div>
+            <div className="text-4xl opacity-80">👥</div>
+          </div>
+          <div className="mt-2 text-xs text-amber-200">
+            {new Set(eventos.map(e => e.bovinos.codigo)).size > 0 ? 
+              `Promedio: ${(new Set(eventos.map(e => e.bovinos.codigo)).size / new Set(eventos.map(e => e.bovinos.nombre_propietario).filter(p => p)).size).toFixed(1)} bovinos/propietario` : 'Sin datos'}
           </div>
         </div>
       </div>
@@ -468,7 +507,7 @@ export default function HistorialPage() {
         </div>
 
         {/* Filtros principales */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               🐄 Bovino
@@ -526,6 +565,38 @@ export default function HistorialPage() {
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
             />
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              👥 Propietario
+            </label>
+            <select
+              value={filtros.propietario}
+              onChange={(e) => setFiltros({...filtros, propietario: e.target.value})}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
+            >
+              <option value="">Todos los propietarios</option>
+              {Array.from(new Set(eventos.map(e => e.bovinos.nombre_propietario).filter(p => p))).map(propietario => (
+                <option key={propietario} value={propietario}>{propietario}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              🐄 Estado del Bovino
+            </label>
+            <select
+              value={filtros.estado_bovino}
+              onChange={(e) => setFiltros({...filtros, estado_bovino: e.target.value})}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200"
+            >
+              <option value="">Todos los estados</option>
+              {estadosBovino.map(estado => (
+                <option key={estado} value={estado}>{estado}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Filtros adicionales */}
@@ -575,7 +646,7 @@ export default function HistorialPage() {
         </div>
 
         {/* Indicadores de filtros activos */}
-        {(filtros.bovino_codigo || filtros.tipo || filtros.fecha_desde || filtros.fecha_hasta || filtros.solo_con_tag) && (
+        {(filtros.bovino_codigo || filtros.tipo || filtros.fecha_desde || filtros.fecha_hasta || filtros.solo_con_tag || filtros.propietario || filtros.estado_bovino) && (
           <div className="mt-4 flex flex-wrap gap-2">
             {filtros.bovino_codigo && (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
@@ -632,6 +703,28 @@ export default function HistorialPage() {
                 </button>
               </span>
             )}
+            {filtros.propietario && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-amber-100 text-amber-800">
+                👥 {filtros.propietario}
+                <button
+                  onClick={() => setFiltros({...filtros, propietario: ''})}
+                  className="ml-2 text-amber-600 hover:text-amber-800"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {filtros.estado_bovino && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-100 text-red-800">
+                🐄 {filtros.estado_bovino}
+                <button
+                  onClick={() => setFiltros({...filtros, estado_bovino: ''})}
+                  className="ml-2 text-red-600 hover:text-red-800"
+                >
+                  ×
+                </button>
+              </span>
+            )}
           </div>
         )}
       </div>
@@ -676,6 +769,7 @@ export default function HistorialPage() {
                 <tr>
                   <th className="p-4 font-semibold text-gray-700">📅 Fecha/Hora</th>
                   <th className="p-4 font-semibold text-gray-700">🐄 Bovino</th>
+                  <th className="p-4 font-semibold text-gray-700">👥 Propietario</th>
                   <th className="p-4 font-semibold text-gray-700">🏷️ Tag RFID</th>
                   <th className="p-4 font-semibold text-gray-700">📋 Tipo</th>
                   <th className="p-4 font-semibold text-gray-700">📝 Detalles</th>
@@ -715,6 +809,15 @@ export default function HistorialPage() {
                           {evento.bovinos.estado || '—'}
                         </span>
                       </div>
+                    </td>
+                    <td className="p-4">
+                      {evento.bovinos.nombre_propietario ? (
+                        <div className="text-sm">
+                          <div className="font-medium text-gray-800">👥 {evento.bovinos.nombre_propietario}</div>
+                        </div>
+                      ) : (
+                        <div className="text-xs text-gray-400 italic">Sin propietario</div>
+                      )}
                     </td>
                     <td className="p-4">
                       {evento.bovinos.tag_rfid ? (
