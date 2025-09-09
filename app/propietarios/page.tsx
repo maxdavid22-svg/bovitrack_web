@@ -19,6 +19,23 @@ type Propietario = {
   bovinos_count?: number;
 };
 
+// Función para hacer match de nombres de propietarios
+const matchPropietario = (propietarioNombre: string, bovinoPropietario: string): boolean => {
+  if (!propietarioNombre || !bovinoPropietario) return false;
+  
+  const propietario = propietarioNombre.trim().toLowerCase();
+  const bovino = bovinoPropietario.trim().toLowerCase();
+  
+  // Match exacto
+  if (propietario === bovino) return true;
+  
+  // Match por primera palabra (nombre)
+  const propietarioPrimeraPalabra = propietario.split(' ')[0];
+  const bovinoPrimeraPalabra = bovino.split(' ')[0];
+  
+  return propietarioPrimeraPalabra === bovinoPrimeraPalabra;
+};
+
 export default function PropietariosPage() {
   const [items, setItems] = useState<Propietario[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,31 +59,69 @@ export default function PropietariosPage() {
         return;
       }
 
-      // Cargar conteo de bovinos por propietario
+      // Cargar TODOS los bovinos para contar correctamente
       const { data: bovinosData, error: bovinosError } = await supabase
         .from('bovinos')
         .select('nombre_propietario')
-        .not('nombre_propietario', 'is', null);
+        .not('nombre_propietario', 'is', null)
+        .not('nombre_propietario', 'eq', '');
 
       if (bovinosError) {
         console.error('Error cargando bovinos:', bovinosError);
       }
 
+      // Debug: Log para verificar los datos
+      console.log('=== DEBUG PROPIETARIOS ===');
+      console.log('Total bovinos en BD:', bovinosData?.length || 0);
+      console.log('Propietarios en BD:', propietariosData?.length || 0);
+
       // Contar bovinos por propietario
       const bovinosPorPropietario = (bovinosData || []).reduce((acc: Record<string, number>, bovino) => {
-        const propietario = bovino.nombre_propietario;
-        if (propietario) {
+        const propietario = bovino.nombre_propietario?.trim();
+        if (propietario && propietario !== '') {
           acc[propietario] = (acc[propietario] || 0) + 1;
         }
         return acc;
       }, {});
 
-      // Agregar conteo de bovinos a cada propietario
-      const propietariosConBovinos = (propietariosData || []).map(propietario => ({
-        ...propietario,
-        bovinos_count: bovinosPorPropietario[propietario.nombre] || 0
-      }));
+      console.log('Bovinos por propietario:', bovinosPorPropietario);
+      console.log('Total bovinos contados:', Object.values(bovinosPorPropietario).reduce((sum, count) => sum + count, 0));
 
+      // Agregar conteo de bovinos a cada propietario usando match más robusto
+      const propietariosConBovinos = (propietariosData || []).map(propietario => {
+        let bovinosCount = 0;
+        
+        // Contar bovinos que coincidan con este propietario
+        (bovinosData || []).forEach(bovino => {
+          if (bovino.nombre_propietario) {
+            // Intentar match con nombre solo
+            if (matchPropietario(propietario.nombre, bovino.nombre_propietario)) {
+              bovinosCount++;
+            }
+            // Si no hay match y tiene apellidos, intentar con nombre completo
+            else if (propietario.apellidos) {
+              const nombreCompleto = `${propietario.nombre} ${propietario.apellidos}`.trim();
+              if (matchPropietario(nombreCompleto, bovino.nombre_propietario)) {
+                bovinosCount++;
+              }
+            }
+          }
+        });
+        
+        // Debug: Log para cada propietario con bovinos
+        if (bovinosCount > 0) {
+          console.log(`✅ Propietario: "${propietario.nombre}", Bovinos: ${bovinosCount}`);
+        } else {
+          console.log(`❌ Propietario: "${propietario.nombre}", Sin bovinos`);
+        }
+        
+        return {
+          ...propietario,
+          bovinos_count: bovinosCount
+        };
+      });
+
+      console.log('=== FIN DEBUG ===');
       setItems(propietariosConBovinos);
     } catch (error) {
       console.error('Error:', error);
