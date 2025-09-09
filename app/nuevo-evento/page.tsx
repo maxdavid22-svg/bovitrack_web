@@ -58,6 +58,7 @@ export default function NuevoEventoPage() {
       if (error) {
         console.error('Error cargando bovinos:', error);
       } else {
+        console.log('Bovinos cargados:', data?.length || 0);
         setBovinos(data || []);
       }
     } catch (error) {
@@ -84,8 +85,15 @@ export default function NuevoEventoPage() {
         .eq('codigo', form.bovino_codigo)
         .single();
 
-      if (bovinoError || !bovinoData) {
-        alert('Bovino no encontrado');
+      if (bovinoError) {
+        console.error('Error buscando bovino:', bovinoError);
+        alert(`Error buscando bovino: ${bovinoError.message}`);
+        setSaving(false);
+        return;
+      }
+      
+      if (!bovinoData) {
+        alert('Bovino no encontrado. Asegúrate de que el bovino esté registrado en el sistema.');
         setSaving(false);
         return;
       }
@@ -106,7 +114,7 @@ export default function NuevoEventoPage() {
 
       if (eventoError) {
         console.error('Error guardando evento:', eventoError);
-        alert('Error al guardar el evento');
+        alert(`Error al guardar el evento: ${eventoError.message}`);
       } else {
         alert('Evento registrado exitosamente');
         router.push('/eventos');
@@ -228,10 +236,10 @@ export default function NuevoEventoPage() {
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  disabled={saving}
+                  disabled={saving || bovinos.length === 0}
                   className="flex-1 bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
-                  {saving ? 'Guardando...' : '💾 Guardar Evento'}
+                  {saving ? 'Guardando...' : bovinos.length === 0 ? 'Sin bovinos disponibles' : '💾 Guardar Evento'}
                 </button>
                 <button
                   type="button"
@@ -250,7 +258,13 @@ export default function NuevoEventoPage() {
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold mb-4">Información del Bovino</h3>
             
-            {bovinoSeleccionado ? (
+            {bovinos.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                <div className="text-4xl mb-2">⚠️</div>
+                <div>No hay bovinos registrados</div>
+                <div className="text-sm mt-2">Registra bovinos primero para poder crear eventos</div>
+              </div>
+            ) : bovinoSeleccionado ? (
               <div className="space-y-3">
                 <div>
                   <div className="text-sm text-gray-500">Código</div>

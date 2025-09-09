@@ -4,10 +4,10 @@
 -- 1. Primero ejecutar la migración si no se ha hecho
 -- (ejecutar migrate_propietarios.sql primero)
 
--- 2. Actualizar registros que tienen 'SIN_DOCUMENTO' para que no se muestren
+-- 2. Actualizar registros que tienen 'SIN_DOCUMENTO' con un valor temporal
 -- Esto es temporal hasta que se sincronicen los datos reales desde la app
 update propietarios 
-set numero_documento = null 
+set numero_documento = 'PENDIENTE_SYNC' 
 where numero_documento = 'SIN_DOCUMENTO';
 
 -- 3. Verificar el estado actual

@@ -139,7 +139,7 @@ export default function PropietariosPage() {
                     </td>
                     <td className="p-4">
                       <div className="text-sm">
-                        {propietario.numero_documento && propietario.numero_documento !== 'SIN_DOCUMENTO' ? (
+                        {propietario.numero_documento && propietario.numero_documento !== 'SIN_DOCUMENTO' && propietario.numero_documento !== 'PENDIENTE_SYNC' ? (
                           <>
                             <span className="font-mono">{propietario.tipo_documento}</span>
                             <div className="text-gray-600">{propietario.numero_documento}</div>
