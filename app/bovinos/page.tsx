@@ -80,6 +80,172 @@ export default function BovinosPage() {
         </div>
       </div>
 
+      {/* Estadísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="text-2xl">🐄</div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total Bovinos</p>
+              <p className="text-2xl font-bold text-gray-900">{items.length}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <div className="text-2xl">✅</div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Bovinos Activos</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {items.filter(b => b.estado === 'Activo').length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <div className="text-2xl">👥</div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Propietarios</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {new Set(items.filter(b => b.nombre_propietario).map(b => b.nombre_propietario)).size}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <div className="text-2xl">⚖️</div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Con Peso</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {items.filter(b => b.peso_actual).length}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Distribución por Propietario */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold mb-4">📊 Distribución por Propietario</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {(() => {
+            const propietariosConBovinos = items
+              .filter(b => b.nombre_propietario)
+              .reduce((acc, b) => {
+                const propietario = b.nombre_propietario!;
+                acc[propietario] = (acc[propietario] || 0) + 1;
+                return acc;
+              }, {} as Record<string, number>);
+
+            const propietariosArray = Object.entries(propietariosConBovinos)
+              .sort(([,a], [,b]) => b - a)
+              .slice(0, 6);
+
+            return propietariosArray.length > 0 ? (
+              propietariosArray.map(([propietario, cantidad]) => (
+                <div key={propietario} className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900 truncate" title={propietario}>
+                        {propietario}
+                      </p>
+                      <p className="text-sm text-gray-600">{cantidad} bovino{cantidad !== 1 ? 's' : ''}</p>
+                    </div>
+                    <div className="text-2xl font-bold text-green-600">
+                      {cantidad}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500 py-8">
+                <div className="text-4xl mb-2">📋</div>
+                <p>No hay bovinos con propietario asignado</p>
+                <p className="text-sm">Asigna propietarios a los bovinos para ver las estadísticas</p>
+              </div>
+            );
+          })()}
+        </div>
+      </div>
+
+      {/* Estadísticas Detalladas */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Por Estado */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold mb-4">📈 Distribución por Estado</h2>
+          <div className="space-y-3">
+            {(() => {
+              const estados = items.reduce((acc, b) => {
+                const estado = b.estado || 'Sin estado';
+                acc[estado] = (acc[estado] || 0) + 1;
+                return acc;
+              }, {} as Record<string, number>);
+
+              return Object.entries(estados)
+                .sort(([,a], [,b]) => b - a)
+                .map(([estado, cantidad]) => (
+                  <div key={estado} className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className={`w-3 h-3 rounded-full mr-3 ${
+                        estado === 'Activo' ? 'bg-green-500' :
+                        estado === 'Vendido' ? 'bg-blue-500' :
+                        estado === 'Sacrificado' ? 'bg-red-500' :
+                        estado === 'Muerto' ? 'bg-gray-500' :
+                        'bg-yellow-500'
+                      }`}></div>
+                      <span className="font-medium">{estado}</span>
+                    </div>
+                    <span className="text-lg font-bold text-gray-900">{cantidad}</span>
+                  </div>
+                ));
+            })()}
+          </div>
+        </div>
+
+        {/* Por Sexo */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold mb-4">⚥ Distribución por Sexo</h2>
+          <div className="space-y-3">
+            {(() => {
+              const sexos = items.reduce((acc, b) => {
+                const sexo = b.sexo || 'Sin especificar';
+                acc[sexo] = (acc[sexo] || 0) + 1;
+                return acc;
+              }, {} as Record<string, number>);
+
+              return Object.entries(sexos)
+                .sort(([,a], [,b]) => b - a)
+                .map(([sexo, cantidad]) => (
+                  <div key={sexo} className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className={`w-3 h-3 rounded-full mr-3 ${
+                        sexo === 'Macho' ? 'bg-blue-500' :
+                        sexo === 'Hembra' ? 'bg-pink-500' :
+                        'bg-gray-500'
+                      }`}></div>
+                      <span className="font-medium">{sexo}</span>
+                    </div>
+                    <span className="text-lg font-bold text-gray-900">{cantidad}</span>
+                  </div>
+                ));
+            })()}
+          </div>
+        </div>
+      </div>
+
       {/* Filtros y estadísticas */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-4">
