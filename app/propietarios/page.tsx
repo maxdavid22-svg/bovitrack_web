@@ -16,6 +16,7 @@ type Propietario = {
   departamento: string | null;
   observaciones: string | null;
   created_at: string;
+  bovinos_count?: number;
 };
 
 export default function PropietariosPage() {
@@ -29,17 +30,44 @@ export default function PropietariosPage() {
 
   const cargarPropietarios = async () => {
     try {
-      const { data, error } = await supabase
+      // Cargar propietarios
+      const { data: propietariosData, error: propietariosError } = await supabase
         .from('propietarios')
         .select('id, tipo_propietario, nombre, apellidos, tipo_documento, numero_documento, telefono, email, direccion, ciudad, departamento, observaciones, created_at')
         .order('created_at', { ascending: false })
         .limit(200);
       
-      if (error) {
-        console.error('Error cargando propietarios:', error);
-      } else {
-        setItems(data || []);
+      if (propietariosError) {
+        console.error('Error cargando propietarios:', propietariosError);
+        return;
       }
+
+      // Cargar conteo de bovinos por propietario
+      const { data: bovinosData, error: bovinosError } = await supabase
+        .from('bovinos')
+        .select('nombre_propietario')
+        .not('nombre_propietario', 'is', null);
+
+      if (bovinosError) {
+        console.error('Error cargando bovinos:', bovinosError);
+      }
+
+      // Contar bovinos por propietario
+      const bovinosPorPropietario = (bovinosData || []).reduce((acc: Record<string, number>, bovino) => {
+        const propietario = bovino.nombre_propietario;
+        if (propietario) {
+          acc[propietario] = (acc[propietario] || 0) + 1;
+        }
+        return acc;
+      }, {});
+
+      // Agregar conteo de bovinos a cada propietario
+      const propietariosConBovinos = (propietariosData || []).map(propietario => ({
+        ...propietario,
+        bovinos_count: bovinosPorPropietario[propietario.nombre] || 0
+      }));
+
+      setItems(propietariosConBovinos);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -71,6 +99,112 @@ export default function PropietariosPage() {
           >
             ➕ Nuevo Propietario
           </a>
+        </div>
+      </div>
+
+      {/* Estadísticas modernas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-3xl font-bold">{items.length}</div>
+              <div className="text-amber-100 text-sm">Total Propietarios</div>
+            </div>
+            <div className="text-4xl opacity-80">👥</div>
+          </div>
+          <div className="mt-2 text-xs text-amber-200">
+            {items.length > 0 ? `${items.filter(p => p.bovinos_count && p.bovinos_count > 0).length} con bovinos` : 'Sin datos'}
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-3xl font-bold">
+                {items.reduce((sum, p) => sum + (p.bovinos_count || 0), 0)}
+              </div>
+              <div className="text-green-100 text-sm">Total Bovinos</div>
+            </div>
+            <div className="text-4xl opacity-80">🐄</div>
+          </div>
+          <div className="mt-2 text-xs text-green-200">
+            {items.length > 0 ? `Promedio: ${(items.reduce((sum, p) => sum + (p.bovinos_count || 0), 0) / items.length).toFixed(1)} por propietario` : 'Sin datos'}
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-3xl font-bold">
+                {Math.max(...items.map(p => p.bovinos_count || 0))}
+              </div>
+              <div className="text-blue-100 text-sm">Máximo Bovinos</div>
+            </div>
+            <div className="text-4xl opacity-80">📈</div>
+          </div>
+          <div className="mt-2 text-xs text-blue-200">
+            {items.length > 0 ? `Propietario con más ganado` : 'Sin datos'}
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-3xl font-bold">
+                {new Set(items.map(p => p.tipo_propietario)).size}
+              </div>
+              <div className="text-purple-100 text-sm">Tipos Diferentes</div>
+            </div>
+            <div className="text-4xl opacity-80">🏢</div>
+          </div>
+          <div className="mt-2 text-xs text-purple-200">
+            {items.length > 0 ? `Diversidad de propietarios` : 'Sin datos'}
+          </div>
+        </div>
+      </div>
+
+      {/* Top Propietarios por Bovinos */}
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <h2 className="text-lg font-semibold mb-4 text-gray-800">🏆 Top Propietarios por Cantidad de Bovinos</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {(() => {
+            const topPropietarios = items
+              .filter(p => p.bovinos_count && p.bovinos_count > 0)
+              .sort((a, b) => (b.bovinos_count || 0) - (a.bovinos_count || 0))
+              .slice(0, 6);
+
+            return topPropietarios.length > 0 ? (
+              topPropietarios.map((propietario, index) => (
+                <div key={propietario.id} className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 border-l-4 border-amber-500">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mr-3">
+                        <span className="text-amber-600 font-bold text-lg">
+                          {index + 1}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-800 truncate max-w-32" title={propietario.nombre}>
+                          {propietario.nombre}
+                        </div>
+                        <div className="text-xs text-gray-600">{propietario.tipo_propietario}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-amber-600">{propietario.bovinos_count}</div>
+                      <div className="text-xs text-gray-500">bovinos</div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500 py-8">
+                <div className="text-4xl mb-2">📊</div>
+                <p>No hay propietarios con bovinos registrados</p>
+                <p className="text-sm">Los propietarios aparecerán aquí cuando tengan bovinos asignados</p>
+              </div>
+            );
+          })()}
         </div>
       </div>
 
@@ -109,19 +243,20 @@ export default function PropietariosPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-left">
                 <tr>
-                  <th className="p-4 font-medium">Tipo</th>
-                  <th className="p-4 font-medium">Nombre</th>
-                  <th className="p-4 font-medium">Documento</th>
-                  <th className="p-4 font-medium">Contacto</th>
-                  <th className="p-4 font-medium">Ubicación</th>
-                  <th className="p-4 font-medium">Registrado</th>
+                  <th className="p-4 font-semibold text-gray-700">Tipo</th>
+                  <th className="p-4 font-semibold text-gray-700">Nombre</th>
+                  <th className="p-4 font-semibold text-gray-700">Documento</th>
+                  <th className="p-4 font-semibold text-gray-700">Bovinos</th>
+                  <th className="p-4 font-semibold text-gray-700">Contacto</th>
+                  <th className="p-4 font-semibold text-gray-700">Ubicación</th>
+                  <th className="p-4 font-semibold text-gray-700">Registrado</th>
                 </tr>
               </thead>
               <tbody>
                 {propietariosFiltrados.map(propietario => (
-                  <tr key={propietario.id} className="border-t hover:bg-gray-50">
+                  <tr key={propietario.id} className="border-t hover:bg-amber-50 transition-colors">
                     <td className="p-4">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         propietario.tipo_propietario === 'Individual' ? 'bg-blue-100 text-blue-800' :
                         propietario.tipo_propietario === 'Empresa' ? 'bg-green-100 text-green-800' :
                         propietario.tipo_propietario === 'Cooperativa' ? 'bg-purple-100 text-purple-800' :
@@ -132,7 +267,7 @@ export default function PropietariosPage() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <div className="font-medium">{propietario.nombre}</div>
+                      <div className="font-semibold text-gray-800">{propietario.nombre}</div>
                       {propietario.apellidos && (
                         <div className="text-gray-600 text-xs">{propietario.apellidos}</div>
                       )}
@@ -141,11 +276,24 @@ export default function PropietariosPage() {
                       <div className="text-sm">
                         {propietario.numero_documento && propietario.numero_documento !== 'SIN_DOCUMENTO' && propietario.numero_documento !== 'PENDIENTE_SYNC' ? (
                           <>
-                            <span className="font-mono">{propietario.tipo_documento}</span>
-                            <div className="text-gray-600">{propietario.numero_documento}</div>
+                            <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{propietario.tipo_documento}</span>
+                            <div className="text-gray-600 text-xs mt-1">{propietario.numero_documento}</div>
                           </>
                         ) : (
                           <span className="text-gray-400 text-xs">Sin documento</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div className="text-center">
+                        {propietario.bovinos_count && propietario.bovinos_count > 0 ? (
+                          <div className="inline-flex items-center">
+                            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">
+                              🐄 {propietario.bovinos_count}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-xs">Sin bovinos</span>
                         )}
                       </div>
                     </td>
@@ -194,50 +342,90 @@ export default function PropietariosPage() {
         )}
       </div>
 
-      {/* Resumen */}
+      {/* Estadísticas por Tipo de Propietario */}
       {items.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">Resumen</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-amber-600">{items.length}</div>
-              <div className="text-sm text-gray-600">Total Propietarios</div>
-            </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
-                {items.filter(p => p.telefono).length}
-              </div>
-              <div className="text-sm text-gray-600">Con Teléfono</div>
-            </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
-                {items.filter(p => p.email).length}
-              </div>
-              <div className="text-sm text-gray-600">Con Email</div>
-            </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">
-                {items.filter(p => p.ciudad).length}
-              </div>
-              <div className="text-sm text-gray-600">Con Ubicación</div>
-            </div>
-          </div>
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h3 className="text-lg font-semibold mb-4 text-gray-800">📊 Distribución por Tipo de Propietario</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Gráfico de barras por tipo */}
+            <div>
+              <h4 className="font-medium text-gray-700 mb-3">Cantidad por Tipo</h4>
+              <div className="space-y-3">
+                {(() => {
+                  const tipos = items.reduce((acc, p) => {
+                    acc[p.tipo_propietario] = (acc[p.tipo_propietario] || 0) + 1;
+                    return acc;
+                  }, {} as Record<string, number>);
 
-          {/* Estadísticas por tipo */}
-          <div>
-            <h4 className="font-medium text-gray-700 mb-3">Distribución por Tipo</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-              {['Individual', 'Empresa', 'Cooperativa', 'Asociación', 'Fundación', 'Sociedad', 'Otro'].map(tipo => {
-                const cantidad = items.filter(p => p.tipo_propietario === tipo).length;
-                if (cantidad === 0) return null;
-                
-                return (
-                  <div key={tipo} className="text-center p-3 bg-gray-50 rounded-lg">
-                    <div className="text-xl font-bold text-amber-600">{cantidad}</div>
-                    <div className="text-xs text-gray-600">{tipo}</div>
-                  </div>
-                );
-              })}
+                  const total = items.length;
+                  
+                  return Object.entries(tipos)
+                    .sort(([,a], [,b]) => b - a)
+                    .map(([tipo, cantidad]) => {
+                      const porcentaje = (cantidad / total) * 100;
+                      return (
+                        <div key={tipo} className="space-y-1">
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium">{tipo}</span>
+                            <span className="text-gray-600">{cantidad} ({porcentaje.toFixed(1)}%)</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full ${
+                                tipo === 'Individual' ? 'bg-blue-500' :
+                                tipo === 'Empresa' ? 'bg-green-500' :
+                                tipo === 'Cooperativa' ? 'bg-purple-500' :
+                                tipo === 'Asociación' ? 'bg-orange-500' :
+                                'bg-gray-500'
+                              }`}
+                              style={{ width: `${porcentaje}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      );
+                    });
+                })()}
+              </div>
+            </div>
+
+            {/* Estadísticas de bovinos por tipo */}
+            <div>
+              <h4 className="font-medium text-gray-700 mb-3">Bovinos por Tipo de Propietario</h4>
+              <div className="space-y-3">
+                {(() => {
+                  const bovinosPorTipo = items.reduce((acc, p) => {
+                    const tipo = p.tipo_propietario;
+                    acc[tipo] = (acc[tipo] || 0) + (p.bovinos_count || 0);
+                    return acc;
+                  }, {} as Record<string, number>);
+
+                  const totalBovinos = Object.values(bovinosPorTipo).reduce((sum, count) => sum + count, 0);
+                  
+                  return Object.entries(bovinosPorTipo)
+                    .sort(([,a], [,b]) => b - a)
+                    .map(([tipo, bovinos]) => {
+                      const porcentaje = totalBovinos > 0 ? (bovinos / totalBovinos) * 100 : 0;
+                      return (
+                        <div key={tipo} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center">
+                            <div className={`w-3 h-3 rounded-full mr-3 ${
+                              tipo === 'Individual' ? 'bg-blue-500' :
+                              tipo === 'Empresa' ? 'bg-green-500' :
+                              tipo === 'Cooperativa' ? 'bg-purple-500' :
+                              tipo === 'Asociación' ? 'bg-orange-500' :
+                              'bg-gray-500'
+                            }`}></div>
+                            <span className="font-medium text-sm">{tipo}</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold text-amber-600">{bovinos}</div>
+                            <div className="text-xs text-gray-500">{porcentaje.toFixed(1)}%</div>
+                          </div>
+                        </div>
+                      );
+                    });
+                })()}
+              </div>
             </div>
           </div>
         </div>
