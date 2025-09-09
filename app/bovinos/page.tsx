@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 type Bovino = { 
@@ -25,6 +26,7 @@ type Bovino = {
 };
 
 export default function BovinosPage() {
+  const router = useRouter();
   const [items, setItems] = useState<Bovino[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState('');
@@ -400,6 +402,7 @@ export default function BovinosPage() {
                   <th className="p-4 font-medium">Propietario</th>
                   <th className="p-4 font-medium">Ubicación</th>
                   <th className="p-4 font-medium">Registrado</th>
+                  <th className="p-4 font-medium">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -470,6 +473,17 @@ export default function BovinosPage() {
                     </td>
                     <td className="p-4 text-gray-500 text-xs">
                       {new Date(bovino.created_at).toLocaleDateString('es-ES')}
+                    </td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => router.push(`/editar-bovino/${bovino.id}`)}
+                        className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors text-sm"
+                      >
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Editar
+                      </button>
                     </td>
                   </tr>
                 ))}
