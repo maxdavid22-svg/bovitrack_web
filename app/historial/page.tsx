@@ -152,6 +152,10 @@ export default function HistorialPage() {
           bovinos: evento.bovinos || { codigo: '', nombre: null, raza: null, sexo: null, estado: null, tag_rfid: null, nombre_propietario: null }
         }));
 
+        // Debug: Ver todos los estados únicos de bovinos
+        const estadosUnicos = [...new Set(eventosMapeados.map(e => e.bovinos.estado))];
+        console.log('Estados únicos de bovinos en historial:', estadosUnicos);
+
         // Aplicar filtros adicionales
         if (filtrosFinales.solo_con_tag) {
           eventosMapeados = eventosMapeados.filter(evento => evento.bovinos.tag_rfid);
