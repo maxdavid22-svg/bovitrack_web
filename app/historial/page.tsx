@@ -15,6 +15,8 @@ type EventoCompleto = {
   costo: number | null;
   ubicacion: string | null;
   hora: string | null;
+  comprador: string | null;
+  destino: string | null;
   bovino_id: string;
   bovinos: {
     codigo: string;
@@ -78,6 +80,8 @@ export default function HistorialPage() {
           costo,
           ubicacion,
           hora,
+          comprador,
+          destino,
           bovino_id,
           created_at,
           bovinos(codigo, nombre, raza, sexo, estado)
@@ -116,6 +120,24 @@ export default function HistorialPage() {
       if (error) {
         console.error('Error cargando eventos:', error);
       } else {
+        // Debug: Log para verificar los datos recibidos
+        console.log('=== DEBUG HISTORIAL ===');
+        console.log('Total eventos recibidos:', data?.length || 0);
+        if (data && data.length > 0) {
+          console.log('Primer evento:', data[0]);
+          console.log('Campos del primer evento:', {
+            medicamento: data[0].medicamento,
+            dosis: data[0].dosis,
+            veterinario: data[0].veterinario,
+            observaciones: data[0].observaciones,
+            peso_kg: data[0].peso_kg,
+            costo: data[0].costo,
+            ubicacion: data[0].ubicacion,
+            hora: data[0].hora
+          });
+        }
+        console.log('=== FIN DEBUG ===');
+        
         // Mapear la respuesta de Supabase para extraer el objeto bovino individual
         const eventosMapeados = (data || []).map((evento: any) => ({
           ...evento,
@@ -489,7 +511,17 @@ export default function HistorialPage() {
                             📝 {evento.observaciones}
                           </div>
                         )}
-                        {!evento.descripcion && !evento.medicamento && !evento.dosis && !evento.peso_kg && !evento.costo && !evento.ubicacion && !evento.observaciones && (
+                        {evento.comprador && (
+                          <div className="text-xs">
+                            <span className="font-medium text-gray-600">👤 Comprador:</span> {evento.comprador}
+                          </div>
+                        )}
+                        {evento.destino && (
+                          <div className="text-xs">
+                            <span className="font-medium text-gray-600">📍 Destino:</span> {evento.destino}
+                          </div>
+                        )}
+                        {!evento.descripcion && !evento.medicamento && !evento.dosis && !evento.peso_kg && !evento.costo && !evento.ubicacion && !evento.observaciones && !evento.comprador && !evento.destino && (
                           <div className="text-xs text-gray-400">Sin detalles</div>
                         )}
                       </div>

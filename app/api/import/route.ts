@@ -51,6 +51,8 @@ type EventoInput = {
   costo?: number | null;
   ubicacion?: string | null;
   hora?: string | null;
+  comprador?: string | null;
+  destino?: string | null;
 };
 
 export async function POST(req: NextRequest) {
@@ -136,6 +138,8 @@ export async function POST(req: NextRequest) {
     let skippedEventos = 0;
     if (eventos.length) {
       try {
+        console.log('[IMPORT] Procesando', eventos.length, 'eventos');
+        console.log('[IMPORT] Primer evento:', eventos[0]);
         const eventosToInsert: any[] = [];
         for (const ev of eventos) {
           let bovinoId = ev.bovino_id;
@@ -165,7 +169,23 @@ export async function POST(req: NextRequest) {
             costo: ev.costo ?? null,
             ubicacion: ev.ubicacion ?? null,
             hora: ev.hora ?? null,
+            comprador: ev.comprador ?? null,
+            destino: ev.destino ?? null,
           };
+          
+          // Debug: Log para verificar campos adicionales
+          if (ev.medicamento || ev.dosis || ev.veterinario || ev.comprador || ev.destino) {
+            console.log('[IMPORT] Evento con campos adicionales:', {
+              bovino_codigo: ev.bovino_codigo,
+              tipo: ev.tipo,
+              medicamento: ev.medicamento,
+              dosis: ev.dosis,
+              veterinario: ev.veterinario,
+              comprador: ev.comprador,
+              destino: ev.destino,
+              precio: ev.costo
+            });
+          }
           if (isUuid(ev.id)) {
             row.id = ev.id;
           } else {
