@@ -228,7 +228,7 @@ export default function HistorialPage() {
               </div>
               <div className="text-green-100 text-sm">Tipos de Evento</div>
             </div>
-            <div className="text-4xl opacity-80">🏷️</div>
+            <div className="text-4xl opacity-80">📋</div>
           </div>
           <div className="mt-2 text-xs text-green-200">
             {eventos.length > 0 ? `Diversidad de eventos` : 'Sin datos'}
@@ -261,7 +261,7 @@ export default function HistorialPage() {
               </div>
               <div className="text-indigo-100 text-sm">Con Tag RFID</div>
             </div>
-            <div className="text-4xl opacity-80">📡</div>
+            <div className="text-4xl opacity-80">🏷️</div>
           </div>
           <div className="mt-2 text-xs text-indigo-200">
             {new Set(eventos.map(e => e.bovinos.codigo)).size > 0 ? 
@@ -359,7 +359,7 @@ export default function HistorialPage() {
 
       {/* Estadísticas de Tag RFID */}
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-lg font-semibold mb-4 text-gray-800">📡 Estadísticas de Tag RFID</h2>
+        <h2 className="text-lg font-semibold mb-4 text-gray-800">🏷️ Estadísticas de Tag RFID</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="font-medium text-gray-700 mb-3">Distribución de Tags</h3>
@@ -438,7 +438,7 @@ export default function HistorialPage() {
                   <div key={bovino.codigo} className="flex items-center justify-between p-3 bg-indigo-50 rounded-lg">
                     <div className="flex items-center">
                       <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-3">
-                        <span className="text-indigo-600 font-semibold text-sm">📡</span>
+                        <span className="text-indigo-600 font-semibold text-sm">🏷️</span>
                       </div>
                       <div>
                         <div className="font-medium text-gray-800 text-sm">{bovino.codigo}</div>
@@ -540,7 +540,7 @@ export default function HistorialPage() {
               }`}
             >
               <div className={`w-3 h-3 rounded-full ${filtros.solo_con_tag ? 'bg-indigo-500' : 'bg-gray-400'}`}></div>
-              <span>📡 Solo con Tag RFID</span>
+              <span>🏷️ Solo con Tag RFID</span>
               <span className="text-xs bg-white px-2 py-1 rounded-full">
                 {new Set(eventos.map(e => e.bovinos.codigo).filter(codigo => {
                   const bovino = eventos.find(e => e.bovinos.codigo === codigo)?.bovinos;
@@ -623,7 +623,7 @@ export default function HistorialPage() {
             )}
             {filtros.solo_con_tag && (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-indigo-100 text-indigo-800">
-                📡 Solo con Tag RFID
+                🏷️ Solo con Tag RFID
                 <button
                   onClick={() => setFiltros({...filtros, solo_con_tag: false})}
                   className="ml-2 text-indigo-600 hover:text-indigo-800"
@@ -878,7 +878,7 @@ export default function HistorialPage() {
                     <div className="text-xs text-gray-500">{bovino.raza || 'Sin raza'}</div>
                     {bovino.tag_rfid && (
                       <div className="text-xs text-indigo-600 font-mono bg-indigo-50 px-2 py-1 rounded mt-1">
-                        📡 {bovino.tag_rfid}
+                        🏷️ {bovino.tag_rfid}
                       </div>
                     )}
                   </div>
