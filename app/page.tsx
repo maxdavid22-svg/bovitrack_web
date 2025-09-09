@@ -105,6 +105,11 @@ export default function Home() {
           <div className="text-lg font-semibold">Propietarios</div>
           <div className="text-sm opacity-90">Gestión de propietarios</div>
         </a>
+        <a href="/nuevo-propietario" className="p-6 rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition transform hover:scale-105">
+          <div className="text-2xl mb-2">👤</div>
+          <div className="text-lg font-semibold">Registrar Propietario</div>
+          <div className="text-sm opacity-90">Agregar nuevo propietario</div>
+        </a>
         <a href="/eventos" className="p-6 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition transform hover:scale-105">
           <div className="text-2xl mb-2">📅</div>
           <div className="text-lg font-semibold">Eventos</div>

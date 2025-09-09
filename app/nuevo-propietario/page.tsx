@@ -1,0 +1,165 @@
+'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+
+type PropietarioForm = {
+  nombre: string;
+  telefono: string;
+  email: string;
+};
+
+export default function NuevoPropietarioPage() {
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState<PropietarioForm>({
+    nombre: '',
+    telefono: '',
+    email: ''
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!form.nombre.trim()) {
+      alert('El nombre es obligatorio');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('propietarios')
+        .insert([{
+          nombre: form.nombre.trim(),
+          telefono: form.telefono.trim() || null,
+          email: form.email.trim() || null
+        }]);
+
+      if (error) {
+        console.error('Error guardando propietario:', error);
+        alert('Error al guardar el propietario');
+      } else {
+        alert('Propietario registrado exitosamente');
+        router.push('/propietarios');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al guardar el propietario');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-amber-600 to-amber-800 text-white rounded-lg p-6">
+        <h1 className="text-2xl font-bold mb-2">👥 Registrar Nuevo Propietario</h1>
+        <p className="text-amber-100">Agregar propietario al sistema</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Formulario */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold mb-4">Información del Propietario</h2>
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={form.nombre}
+                  onChange={(e) => setForm({...form, nombre: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  placeholder="Nombre completo del propietario"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Teléfono
+                </label>
+                <input
+                  type="tel"
+                  value={form.telefono}
+                  onChange={(e) => setForm({...form, telefono: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  placeholder="Número de teléfono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({...form, email: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  placeholder="Correo electrónico"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 bg-amber-600 text-white py-3 px-4 rounded-md hover:bg-amber-700 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  {saving ? 'Guardando...' : '💾 Guardar Propietario'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push('/propietarios')}
+                  className="px-4 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {/* Información adicional */}
+        <div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold mb-4">Información del Sistema</h3>
+            
+            <div className="space-y-3 text-sm text-gray-600">
+              <div>
+                <h4 className="font-medium text-gray-700 mb-1">Datos Requeridos</h4>
+                <ul className="space-y-1">
+                  <li>• Nombre completo</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-medium text-gray-700 mb-1">Datos Opcionales</h4>
+                <ul className="space-y-1">
+                  <li>• Teléfono de contacto</li>
+                  <li>• Correo electrónico</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Ayuda */}
+          <div className="bg-blue-50 rounded-lg p-4 mt-4">
+            <h4 className="font-medium text-blue-800 mb-2">💡 Información</h4>
+            <div className="text-sm text-blue-700 space-y-1">
+              <div>Los propietarios pueden tener múltiples bovinos asociados.</div>
+              <div>La información de contacto es útil para comunicaciones.</div>
+              <div>Los datos se sincronizan automáticamente con la app móvil.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
