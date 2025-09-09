@@ -148,16 +148,23 @@ export default function EditarBovinoPage() {
         observaciones: observaciones.trim() || null,
       };
 
-      const { error } = await supabase
+      console.log('Actualizando bovino con payload:', payload);
+      
+      const { data: updateData, error } = await supabase
         .from('bovinos')
         .update(payload)
-        .eq('id', bovinoId);
+        .eq('id', bovinoId)
+        .select();
+
+      console.log('Resultado de la actualización:', { updateData, error });
 
       if (error) {
         console.error('Error actualizando bovino:', error);
         alert('Error al actualizar el bovino: ' + error.message);
         return;
       }
+
+      console.log('Bovino actualizado exitosamente:', updateData);
 
       alert('Bovino actualizado exitosamente');
       router.push('/bovinos');

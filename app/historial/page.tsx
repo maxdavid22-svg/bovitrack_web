@@ -164,9 +164,13 @@ export default function HistorialPage() {
         }
 
         if (filtrosFinales.estado_bovino) {
-          eventosMapeados = eventosMapeados.filter(evento => 
-            evento.bovinos.estado === filtrosFinales.estado_bovino
-          );
+          console.log('Filtrando por estado:', filtrosFinales.estado_bovino);
+          console.log('Eventos antes del filtro:', eventosMapeados.length);
+          eventosMapeados = eventosMapeados.filter(evento => {
+            console.log('Estado del bovino:', evento.bovinos.estado, 'Filtro:', filtrosFinales.estado_bovino);
+            return evento.bovinos.estado === filtrosFinales.estado_bovino;
+          });
+          console.log('Eventos después del filtro:', eventosMapeados.length);
         }
 
         setEventos(eventosMapeados);
