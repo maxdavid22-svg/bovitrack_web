@@ -7,6 +7,14 @@ type EventoCompleto = {
   tipo: string;
   fecha: string;
   descripcion: string | null;
+  medicamento: string | null;
+  dosis: string | null;
+  veterinario: string | null;
+  observaciones: string | null;
+  peso_kg: number | null;
+  costo: number | null;
+  ubicacion: string | null;
+  hora: string | null;
   bovino_id: string;
   bovinos: {
     codigo: string;
@@ -62,6 +70,14 @@ export default function HistorialPage() {
           tipo,
           fecha,
           descripcion,
+          medicamento,
+          dosis,
+          veterinario,
+          observaciones,
+          peso_kg,
+          costo,
+          ubicacion,
+          hora,
           bovino_id,
           created_at,
           bovinos(codigo, nombre, raza, sexo, estado)
@@ -140,6 +156,151 @@ export default function HistorialPage() {
       <div className="bg-gradient-to-r from-teal-600 to-teal-800 text-white rounded-lg p-6">
         <h1 className="text-2xl font-bold mb-2">📊 Historial de Trazabilidad</h1>
         <p className="text-teal-100">Seguimiento completo de eventos por bovino</p>
+      </div>
+
+      {/* Estadísticas modernas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-3xl font-bold">{eventos.length}</div>
+              <div className="text-teal-100 text-sm">Total Eventos</div>
+            </div>
+            <div className="text-4xl opacity-80">📊</div>
+          </div>
+          <div className="mt-2 text-xs text-teal-200">
+            {eventos.length > 0 ? `Último: ${new Date(eventos[0]?.fecha).toLocaleDateString('es-ES')}` : 'Sin eventos'}
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-3xl font-bold">
+                {new Set(eventos.map(e => e.bovinos.codigo)).size}
+              </div>
+              <div className="text-blue-100 text-sm">Bovinos Únicos</div>
+            </div>
+            <div className="text-4xl opacity-80">🐄</div>
+          </div>
+          <div className="mt-2 text-xs text-blue-200">
+            {eventos.length > 0 ? `Promedio: ${(eventos.length / new Set(eventos.map(e => e.bovinos.codigo)).size).toFixed(1)} eventos/bovino` : 'Sin datos'}
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-3xl font-bold">
+                {new Set(eventos.map(e => e.tipo)).size}
+              </div>
+              <div className="text-green-100 text-sm">Tipos de Evento</div>
+            </div>
+            <div className="text-4xl opacity-80">🏷️</div>
+          </div>
+          <div className="mt-2 text-xs text-green-200">
+            {eventos.length > 0 ? `Diversidad de eventos` : 'Sin datos'}
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-3xl font-bold">
+                {eventos.filter(e => e.veterinario).length}
+              </div>
+              <div className="text-purple-100 text-sm">Con Veterinario</div>
+            </div>
+            <div className="text-4xl opacity-80">👨‍⚕️</div>
+          </div>
+          <div className="mt-2 text-xs text-purple-200">
+            {eventos.length > 0 ? `${((eventos.filter(e => e.veterinario).length / eventos.length) * 100).toFixed(1)}% del total` : 'Sin datos'}
+          </div>
+        </div>
+      </div>
+
+      {/* Distribución por Tipo de Evento */}
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <h2 className="text-lg font-semibold mb-4 text-gray-800">📈 Distribución por Tipo de Evento</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <h3 className="font-medium text-gray-700 mb-3">Cantidad por Tipo</h3>
+            <div className="space-y-3">
+              {(() => {
+                const tipos = eventos.reduce((acc, e) => {
+                  acc[e.tipo] = (acc[e.tipo] || 0) + 1;
+                  return acc;
+                }, {} as Record<string, number>);
+
+                const total = eventos.length;
+                
+                return Object.entries(tipos)
+                  .sort(([,a], [,b]) => b - a)
+                  .map(([tipo, cantidad]) => {
+                    const porcentaje = total > 0 ? (cantidad / total) * 100 : 0;
+                    return (
+                      <div key={tipo} className="space-y-1">
+                        <div className="flex justify-between text-sm">
+                          <span className="font-medium">{tipo}</span>
+                          <span className="text-gray-600">{cantidad} ({porcentaje.toFixed(1)}%)</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full ${
+                              tipo === 'Vacunación' ? 'bg-green-500' :
+                              tipo === 'Tratamiento' ? 'bg-yellow-500' :
+                              tipo === 'Pesaje' ? 'bg-purple-500' :
+                              tipo === 'Reproducción' ? 'bg-pink-500' :
+                              tipo === 'Parto' ? 'bg-orange-500' :
+                              tipo === 'Venta' ? 'bg-red-500' :
+                              tipo === 'Muerte' ? 'bg-gray-500' :
+                              'bg-blue-500'
+                            }`}
+                            style={{ width: `${porcentaje}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  });
+              })()}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-medium text-gray-700 mb-3">Eventos por Veterinario</h3>
+            <div className="space-y-3">
+              {(() => {
+                const veterinarios = eventos
+                  .filter(e => e.veterinario)
+                  .reduce((acc, e) => {
+                    const vet = e.veterinario!;
+                    acc[vet] = (acc[vet] || 0) + 1;
+                    return acc;
+                  }, {} as Record<string, number>);
+
+                return Object.entries(veterinarios)
+                  .sort(([,a], [,b]) => b - a)
+                  .slice(0, 5)
+                  .map(([veterinario, cantidad]) => (
+                    <div key={veterinario} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                          <span className="text-purple-600 font-semibold text-sm">
+                            {veterinario.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-800 text-sm">{veterinario}</div>
+                          <div className="text-xs text-gray-500">{cantidad} eventos</div>
+                        </div>
+                      </div>
+                      <div className="text-lg font-bold text-purple-600">{cantidad}</div>
+                    </div>
+                  ));
+              })()}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Filtros */}
@@ -240,38 +401,46 @@ export default function HistorialPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-left">
                 <tr>
-                  <th className="p-4 font-medium">Fecha</th>
-                  <th className="p-4 font-medium">Bovino</th>
-                  <th className="p-4 font-medium">Tipo</th>
-                  <th className="p-4 font-medium">Descripción</th>
-                  <th className="p-4 font-medium">Registrado</th>
+                  <th className="p-4 font-semibold text-gray-700">Fecha/Hora</th>
+                  <th className="p-4 font-semibold text-gray-700">Bovino</th>
+                  <th className="p-4 font-semibold text-gray-700">Tipo</th>
+                  <th className="p-4 font-semibold text-gray-700">Detalles</th>
+                  <th className="p-4 font-semibold text-gray-700">Veterinario</th>
+                  <th className="p-4 font-semibold text-gray-700">Registrado</th>
                 </tr>
               </thead>
               <tbody>
                 {eventos.map(evento => (
-                  <tr key={evento.id} className="border-t hover:bg-gray-50">
+                  <tr key={evento.id} className="border-t hover:bg-teal-50 transition-colors">
                     <td className="p-4">
-                      <div className="font-medium">
+                      <div className="font-semibold text-gray-800">
                         {new Date(evento.fecha).toLocaleDateString('es-ES')}
                       </div>
+                      {evento.hora && (
+                        <div className="text-xs text-gray-500">
+                          🕐 {evento.hora}
+                        </div>
+                      )}
                     </td>
                     <td className="p-4">
-                      <div className="font-mono text-blue-600">{evento.bovinos.codigo}</div>
+                      <div className="font-mono text-blue-600 font-semibold">{evento.bovinos.codigo}</div>
                       <div className="text-gray-600 text-xs">
                         {evento.bovinos.nombre || 'Sin nombre'} • {evento.bovinos.raza || 'Sin raza'}
                       </div>
                       <div className="text-xs">
-                        <span className={`px-2 py-1 rounded-full ${
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           evento.bovinos.estado === 'Activo' ? 'bg-green-100 text-green-800' : 
-                          evento.bovinos.estado === 'Inactivo' ? 'bg-red-100 text-red-800' : 
-                          'bg-gray-100 text-gray-800'
+                          evento.bovinos.estado === 'Vendido' ? 'bg-blue-100 text-blue-800' :
+                          evento.bovinos.estado === 'Sacrificado' ? 'bg-red-100 text-red-800' :
+                          evento.bovinos.estado === 'Muerto' ? 'bg-gray-100 text-gray-800' :
+                          'bg-yellow-100 text-yellow-800'
                         }`}>
                           {evento.bovinos.estado || '—'}
                         </span>
                       </div>
                     </td>
                     <td className="p-4">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         evento.tipo === 'Registro' ? 'bg-blue-100 text-blue-800' :
                         evento.tipo === 'Vacunación' ? 'bg-green-100 text-green-800' :
                         evento.tipo === 'Tratamiento' ? 'bg-yellow-100 text-yellow-800' :
@@ -286,12 +455,64 @@ export default function HistorialPage() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <div className="max-w-xs">
-                        {evento.descripcion || 'Sin descripción'}
+                      <div className="space-y-1 max-w-xs">
+                        {evento.descripcion && (
+                          <div className="text-sm text-gray-800">{evento.descripcion}</div>
+                        )}
+                        {evento.medicamento && (
+                          <div className="text-xs">
+                            <span className="font-medium text-gray-600">💊 Medicamento:</span> {evento.medicamento}
+                          </div>
+                        )}
+                        {evento.dosis && (
+                          <div className="text-xs">
+                            <span className="font-medium text-gray-600">📏 Dosis:</span> {evento.dosis}
+                          </div>
+                        )}
+                        {evento.peso_kg && (
+                          <div className="text-xs">
+                            <span className="font-medium text-gray-600">⚖️ Peso:</span> {evento.peso_kg} kg
+                          </div>
+                        )}
+                        {evento.costo && (
+                          <div className="text-xs">
+                            <span className="font-medium text-gray-600">💰 Costo:</span> ${evento.costo}
+                          </div>
+                        )}
+                        {evento.ubicacion && (
+                          <div className="text-xs">
+                            <span className="font-medium text-gray-600">📍 Ubicación:</span> {evento.ubicacion}
+                          </div>
+                        )}
+                        {evento.observaciones && (
+                          <div className="text-xs text-gray-500 italic">
+                            📝 {evento.observaciones}
+                          </div>
+                        )}
+                        {!evento.descripcion && !evento.medicamento && !evento.dosis && !evento.peso_kg && !evento.costo && !evento.ubicacion && !evento.observaciones && (
+                          <div className="text-xs text-gray-400">Sin detalles</div>
+                        )}
                       </div>
                     </td>
+                    <td className="p-4">
+                      {evento.veterinario ? (
+                        <div className="text-sm">
+                          <div className="font-medium text-gray-800">👨‍⚕️ {evento.veterinario}</div>
+                        </div>
+                      ) : (
+                        <div className="text-xs text-gray-400">Sin veterinario</div>
+                      )}
+                    </td>
                     <td className="p-4 text-gray-500 text-xs">
-                      {new Date(evento.created_at).toLocaleString('es-ES')}
+                      <div className="font-medium">
+                        {new Date(evento.created_at).toLocaleDateString('es-ES')}
+                      </div>
+                      <div className="text-xs">
+                        {new Date(evento.created_at).toLocaleTimeString('es-ES', { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </div>
                     </td>
                   </tr>
                 ))}

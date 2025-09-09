@@ -36,7 +36,22 @@ type Bovino = {
   observaciones?: string | null;
   foto?: string | null;
 };
-type EventoInput = { id?: string; bovino_id?: string; bovino_codigo?: string; tipo: string; fecha: string; descripcion?: string | null };
+type EventoInput = { 
+  id?: string; 
+  bovino_id?: string; 
+  bovino_codigo?: string; 
+  tipo: string; 
+  fecha: string; 
+  descripcion?: string | null;
+  medicamento?: string | null;
+  dosis?: string | null;
+  veterinario?: string | null;
+  observaciones?: string | null;
+  peso_kg?: number | null;
+  costo?: number | null;
+  ubicacion?: string | null;
+  hora?: string | null;
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -142,6 +157,14 @@ export async function POST(req: NextRequest) {
             tipo: ev.tipo || 'Registro',
             fecha: ev.fecha || new Date().toISOString().slice(0, 10),
             descripcion: ev.descripcion ?? null,
+            medicamento: ev.medicamento ?? null,
+            dosis: ev.dosis ?? null,
+            veterinario: ev.veterinario ?? null,
+            observaciones: ev.observaciones ?? null,
+            peso_kg: ev.peso_kg ?? null,
+            costo: ev.costo ?? null,
+            ubicacion: ev.ubicacion ?? null,
+            hora: ev.hora ?? null,
           };
           if (isUuid(ev.id)) {
             row.id = ev.id;
