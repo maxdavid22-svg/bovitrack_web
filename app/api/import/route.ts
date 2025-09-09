@@ -2,7 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-type Propietario = { id?: string; nombre: string; telefono?: string | null; email?: string | null };
+type Propietario = { 
+  id?: string; 
+  tipo_propietario?: string;
+  nombre: string; 
+  apellidos?: string | null;
+  tipo_documento?: string;
+  numero_documento?: string;
+  telefono?: string | null; 
+  email?: string | null;
+  direccion?: string | null;
+  ciudad?: string | null;
+  departamento?: string | null;
+  observaciones?: string | null;
+};
 type Bovino = { id?: string; codigo: string; nombre?: string | null; raza?: string | null; sexo?: string | null; fecha_nacimiento?: string | null; estado?: string | null; propietario_id?: string | null };
 type EventoInput = { id?: string; bovino_id?: string; bovino_codigo?: string; tipo: string; fecha: string; descripcion?: string | null };
 
@@ -26,33 +39,44 @@ export async function POST(req: NextRequest) {
     if (propietarios.length) {
       try {
         for (const p of propietarios) {
-          const nombre = p.nombre;
-          const telefono = p.telefono ?? null;
-          const email = p.email ?? null;
+          const propietarioData = {
+            tipo_propietario: p.tipo_propietario || 'Individual',
+            nombre: p.nombre,
+            apellidos: p.apellidos || null,
+            tipo_documento: p.tipo_documento || 'DNI',
+            numero_documento: p.numero_documento || 'SIN_DOCUMENTO',
+            telefono: p.telefono || null,
+            email: p.email || null,
+            direccion: p.direccion || null,
+            ciudad: p.ciudad || null,
+            departamento: p.departamento || null,
+            observaciones: p.observaciones || null
+          };
+          
           // Si el id es UUID intentamos upsert por id
           if (isUuid(p.id)) {
             const { error } = await supabaseAdmin
               .from('propietarios')
-              .upsert([{ id: p.id, nombre, telefono, email }], { onConflict: 'id', ignoreDuplicates: false });
+              .upsert([{ id: p.id, ...propietarioData }], { onConflict: 'id', ignoreDuplicates: false });
             if (error) throw error;
           } else {
             // Actualizar por nombre si existe, si no, insertar
             const { data: existing, error: selErr } = await supabaseAdmin
               .from('propietarios')
               .select('id')
-              .eq('nombre', nombre)
+              .eq('nombre', p.nombre)
               .maybeSingle();
             if (selErr) throw selErr;
             if (existing?.id) {
               const { error: updErr } = await supabaseAdmin
                 .from('propietarios')
-                .update({ telefono, email })
+                .update(propietarioData)
                 .eq('id', existing.id);
               if (updErr) throw updErr;
             } else {
               const { error: insErr } = await supabaseAdmin
                 .from('propietarios')
-                .insert([{ nombre, telefono, email }]);
+                .insert([propietarioData]);
               if (insErr) throw insErr;
             }
           }

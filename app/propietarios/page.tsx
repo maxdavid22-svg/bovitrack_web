@@ -139,8 +139,14 @@ export default function PropietariosPage() {
                     </td>
                     <td className="p-4">
                       <div className="text-sm">
-                        <span className="font-mono">{propietario.tipo_documento}</span>
-                        <div className="text-gray-600">{propietario.numero_documento}</div>
+                        {propietario.numero_documento && propietario.numero_documento !== 'SIN_DOCUMENTO' ? (
+                          <>
+                            <span className="font-mono">{propietario.tipo_documento}</span>
+                            <div className="text-gray-600">{propietario.numero_documento}</div>
+                          </>
+                        ) : (
+                          <span className="text-gray-400 text-xs">Sin documento</span>
+                        )}
                       </div>
                     </td>
                     <td className="p-4">
