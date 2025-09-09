@@ -146,15 +146,31 @@ export default function HistorialPage() {
         }
         console.log('=== FIN DEBUG ===');
         
-        // Mapear la respuesta de Supabase para extraer el objeto bovino individual
-        let eventosMapeados = (data || []).map((evento: any) => ({
-          ...evento,
-          bovinos: evento.bovinos || { codigo: '', nombre: null, raza: null, sexo: null, estado: null, tag_rfid: null, nombre_propietario: null }
-        }));
+        // Obtener estados actuales de bovinos
+        const bovinoIds = [...new Set((data || []).map((evento: any) => evento.bovino_id))];
+        const { data: bovinosActuales } = await supabase
+          .from('bovinos')
+          .select('id, codigo, nombre, raza, sexo, estado, tag_rfid, nombre_propietario')
+          .in('id', bovinoIds);
+
+        // Crear mapa de bovinos actuales
+        const bovinosMap = new Map();
+        (bovinosActuales || []).forEach(bovino => {
+          bovinosMap.set(bovino.id, bovino);
+        });
+
+        // Mapear eventos con datos actuales de bovinos
+        let eventosMapeados = (data || []).map((evento: any) => {
+          const bovinoActual = bovinosMap.get(evento.bovino_id) || evento.bovinos;
+          return {
+            ...evento,
+            bovinos: bovinoActual || { codigo: '', nombre: null, raza: null, sexo: null, estado: null, tag_rfid: null, nombre_propietario: null }
+          };
+        });
 
         // Debug: Ver todos los estados únicos de bovinos
         const estadosUnicos = [...new Set(eventosMapeados.map(e => e.bovinos.estado))];
-        console.log('Estados únicos de bovinos en historial:', estadosUnicos);
+        console.log('Estados únicos de bovinos en historial (ACTUALIZADOS):', estadosUnicos);
 
         // Aplicar filtros adicionales
         if (filtrosFinales.solo_con_tag) {
