@@ -16,3 +16,4 @@ AND column_name = 'tag_rfid';
 -- Si la consulta anterior no devuelve resultados, ejecutar esto para agregar la columna:
 -- ALTER TABLE bovinos ADD COLUMN IF NOT EXISTS tag_rfid text;
 -- CREATE INDEX IF NOT EXISTS idx_bovinos_tag_rfid ON bovinos(tag_rfid);
+

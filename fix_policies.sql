@@ -18,3 +18,6 @@ drop policy if exists update_dev on eventos;
 drop policy if exists delete_dev on eventos;
 create policy update_dev on eventos for update using (true);
 create policy delete_dev on eventos for delete using (true);
+
+
+

@@ -22,3 +22,4 @@ LIMIT 10;
 -- SET tag_rfid = 'TEST123' 
 -- WHERE id = 'tu-id-aqui' 
 -- RETURNING id, codigo, tag_rfid;
+

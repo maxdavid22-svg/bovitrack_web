@@ -22,6 +22,7 @@ type Bovino = {
   observaciones: string | null;
   foto: string | null;
   tag_rfid: string | null;
+  huella: string | null;
   created_at: string;
 };
 
@@ -31,6 +32,7 @@ export default function BovinosPage() {
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState('');
   const [mostrarTagRfid, setMostrarTagRfid] = useState(false);
+  const [mostrarHuella, setMostrarHuella] = useState(false);
   const [soloConTag, setSoloConTag] = useState(false);
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export default function BovinosPage() {
     try {
       const { data, error } = await supabase
         .from('bovinos')
-        .select('id, codigo, nombre, raza, sexo, estado, fecha_nacimiento, peso_nacimiento, peso_actual, color, marcas, id_propietario, nombre_propietario, ubicacion_actual, coordenadas, observaciones, foto, tag_rfid, created_at')
+        .select('id, codigo, nombre, raza, sexo, estado, fecha_nacimiento, peso_nacimiento, peso_actual, color, marcas, id_propietario, nombre_propietario, ubicacion_actual, coordenadas, observaciones, foto, tag_rfid, huella, created_at')
         .order('created_at', { ascending: false })
         .limit(200);
       
@@ -73,7 +75,8 @@ export default function BovinosPage() {
         (bovino.marcas && bovino.marcas.toLowerCase().includes(filtro.toLowerCase())) ||
         (bovino.nombre_propietario && bovino.nombre_propietario.toLowerCase().includes(filtro.toLowerCase())) ||
         (bovino.ubicacion_actual && bovino.ubicacion_actual.toLowerCase().includes(filtro.toLowerCase())) ||
-        (bovino.tag_rfid && bovino.tag_rfid.toLowerCase().includes(filtro.toLowerCase()))
+        (bovino.tag_rfid && bovino.tag_rfid.toLowerCase().includes(filtro.toLowerCase())) ||
+        (bovino.huella && bovino.huella.toLowerCase().includes(filtro.toLowerCase()))
       );
     }
     
@@ -99,7 +102,7 @@ export default function BovinosPage() {
       </div>
 
       {/* Estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -163,6 +166,20 @@ export default function BovinosPage() {
               <p className="text-sm font-medium text-gray-600">Con Tag RFID</p>
               <p className="text-2xl font-bold text-gray-900">
                 {items.filter(b => b.tag_rfid).length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <div className="text-2xl">👤</div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Con Huella</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {items.filter(b => b.huella).length}
               </p>
             </div>
           </div>
@@ -292,7 +309,7 @@ export default function BovinosPage() {
           <div className="relative">
             <input
               type="text"
-              placeholder="Buscar por código, nombre, raza, Tag RFID..."
+              placeholder="Buscar por código, nombre, raza, Tag RFID, huella..."
               value={filtro}
               onChange={(e) => setFiltro(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
@@ -334,6 +351,19 @@ export default function BovinosPage() {
           >
             <div className={`w-3 h-3 rounded-full ${mostrarTagRfid ? 'bg-blue-500' : 'bg-gray-400'}`}></div>
             <span>👁️ Mostrar Tag RFID</span>
+          </button>
+
+          {/* Mostrar/Ocultar Huella */}
+          <button
+            onClick={() => setMostrarHuella(!mostrarHuella)}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              mostrarHuella 
+                ? 'bg-orange-100 text-orange-700 border-2 border-orange-200' 
+                : 'bg-gray-100 text-gray-600 border-2 border-gray-200 hover:bg-gray-200'
+            }`}
+          >
+            <div className={`w-3 h-3 rounded-full ${mostrarHuella ? 'bg-orange-500' : 'bg-gray-400'}`}></div>
+            <span>👤 Mostrar Huella</span>
           </button>
 
           {/* Limpiar filtros */}
@@ -394,6 +424,7 @@ export default function BovinosPage() {
                 <tr>
                   <th className="p-4 font-medium">Código</th>
                   {mostrarTagRfid && <th className="p-4 font-medium">Tag RFID</th>}
+                  {mostrarHuella && <th className="p-4 font-medium">Huella</th>}
                   <th className="p-4 font-medium">Nombre</th>
                   <th className="p-4 font-medium">Raza</th>
                   <th className="p-4 font-medium">Sexo</th>
@@ -420,6 +451,22 @@ export default function BovinosPage() {
                             </div>
                           ) : (
                             <div className="text-gray-400 text-xs">Sin tag</div>
+                          )}
+                        </div>
+                      </td>
+                    )}
+                    {mostrarHuella && (
+                      <td className="p-4">
+                        <div className="text-sm">
+                          {bovino.huella ? (
+                            <div className="flex items-center space-x-2">
+                              <div className="text-orange-600 text-lg">👤</div>
+                              <div className="font-medium text-orange-700 bg-orange-50 px-2 py-1 rounded">
+                                Registrada
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-gray-400 text-xs">Sin huella</div>
                           )}
                         </div>
                       </td>

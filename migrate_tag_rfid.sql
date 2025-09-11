@@ -9,3 +9,4 @@ create index if not exists idx_bovinos_tag_rfid on bovinos(tag_rfid);
 
 -- Agregar comentario a la columna
 comment on column bovinos.tag_rfid is 'Identificador del tag RFID del bovino';
+
