@@ -23,6 +23,7 @@ type Bovino = {
   foto: string | null;
   tag_rfid: string | null;
   huella: string | null;
+  imagenes: string[] | null;
   created_at: string;
 };
 
@@ -43,7 +44,7 @@ export default function BovinosPage() {
     try {
       const { data, error } = await supabase
         .from('bovinos')
-        .select('id, codigo, nombre, raza, sexo, estado, fecha_nacimiento, peso_nacimiento, peso_actual, color, marcas, id_propietario, nombre_propietario, ubicacion_actual, coordenadas, observaciones, foto, tag_rfid, huella, created_at')
+        .select('id, codigo, nombre, raza, sexo, estado, fecha_nacimiento, peso_nacimiento, peso_actual, color, marcas, id_propietario, nombre_propietario, ubicacion_actual, coordenadas, observaciones, foto, tag_rfid, huella, imagenes, created_at')
         .order('created_at', { ascending: false })
         .limit(200);
       
@@ -76,7 +77,8 @@ export default function BovinosPage() {
         (bovino.nombre_propietario && bovino.nombre_propietario.toLowerCase().includes(filtro.toLowerCase())) ||
         (bovino.ubicacion_actual && bovino.ubicacion_actual.toLowerCase().includes(filtro.toLowerCase())) ||
         (bovino.tag_rfid && bovino.tag_rfid.toLowerCase().includes(filtro.toLowerCase())) ||
-        (bovino.huella && bovino.huella.toLowerCase().includes(filtro.toLowerCase()))
+        (bovino.huella && bovino.huella.toLowerCase().includes(filtro.toLowerCase())) ||
+        (bovino.imagenes && bovino.imagenes.some(img => img.toLowerCase().includes(filtro.toLowerCase())))
       );
     }
     
@@ -102,7 +104,7 @@ export default function BovinosPage() {
       </div>
 
       {/* Estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -180,6 +182,20 @@ export default function BovinosPage() {
               <p className="text-sm font-medium text-gray-600">Con Huella</p>
               <p className="text-2xl font-bold text-gray-900">
                 {items.filter(b => b.huella).length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="text-2xl">📷</div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Con Imágenes</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {items.filter(b => b.imagenes && b.imagenes.length > 0).length}
               </p>
             </div>
           </div>
@@ -309,7 +325,7 @@ export default function BovinosPage() {
           <div className="relative">
             <input
               type="text"
-              placeholder="Buscar por código, nombre, raza, Tag RFID, huella..."
+              placeholder="Buscar por código, nombre, raza, Tag RFID, huella, imágenes..."
               value={filtro}
               onChange={(e) => setFiltro(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
@@ -433,6 +449,7 @@ export default function BovinosPage() {
                   <th className="p-4 font-medium">Propietario</th>
                   <th className="p-4 font-medium">Ubicación</th>
                   <th className="p-4 font-medium">Registrado</th>
+                  <th className="p-4 font-medium">Imágenes</th>
                   <th className="p-4 font-medium">Acciones</th>
                 </tr>
               </thead>
@@ -520,6 +537,20 @@ export default function BovinosPage() {
                     </td>
                     <td className="p-4 text-gray-500 text-xs">
                       {new Date(bovino.created_at).toLocaleDateString('es-ES')}
+                    </td>
+                    <td className="p-4">
+                      <div className="text-sm">
+                        {bovino.imagenes && bovino.imagenes.length > 0 ? (
+                          <div className="flex items-center space-x-2">
+                            <div className="text-blue-600 text-lg">📷</div>
+                            <div className="font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded">
+                              {bovino.imagenes.length} imagen{bovino.imagenes.length !== 1 ? 'es' : ''}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-gray-400 text-xs">Sin imágenes</div>
+                        )}
+                      </div>
                     </td>
                     <td className="p-4">
                       <button
