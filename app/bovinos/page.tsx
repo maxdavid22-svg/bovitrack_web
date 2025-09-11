@@ -189,7 +189,7 @@ export default function BovinosPage() {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-2 bg-orange-100 rounded-lg">
-              <div className="text-2xl">🐄</div>
+              <div className="text-2xl">🐾</div>
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Con Huella</p>
@@ -489,11 +489,8 @@ export default function BovinosPage() {
                       <td className="p-4">
                         <div className="text-sm">
                           {(bovino.huella || (bovino.imagenes && bovino.imagenes.length > 0)) ? (
-                            <div className="flex items-center space-x-2">
-                              <div className="text-orange-600 text-lg">🐄</div>
-                              <div className="font-medium text-orange-700 bg-orange-50 px-2 py-1 rounded">
-                                SI
-                              </div>
+                            <div className="flex items-center justify-center">
+                              <div className="text-orange-600 text-xl">🐾</div>
                             </div>
                           ) : (
                             <div className="text-gray-400 text-xs">Sin huella</div>
