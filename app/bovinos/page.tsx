@@ -82,7 +82,8 @@ export default function BovinosPage() {
         (bovino.ubicacion_actual && bovino.ubicacion_actual.toLowerCase().includes(filtro.toLowerCase())) ||
         (bovino.tag_rfid && bovino.tag_rfid.toLowerCase().includes(filtro.toLowerCase())) ||
         (bovino.huella && bovino.huella.toLowerCase().includes(filtro.toLowerCase())) ||
-        (bovino.imagenes && bovino.imagenes.some(img => img.toLowerCase().includes(filtro.toLowerCase())))
+        (bovino.imagenes && bovino.imagenes.some(img => img.toLowerCase().includes(filtro.toLowerCase()))) ||
+        (filtro.toLowerCase().includes('huella') && (bovino.huella || (bovino.imagenes && bovino.imagenes.length > 0)))
       );
     }
     
@@ -193,7 +194,7 @@ export default function BovinosPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Con Huella</p>
               <p className="text-2xl font-bold text-gray-900">
-                {items.filter(b => b.huella).length}
+                {items.filter(b => b.huella || (b.imagenes && b.imagenes.length > 0)).length}
               </p>
             </div>
           </div>
@@ -487,11 +488,11 @@ export default function BovinosPage() {
                     {mostrarHuella && (
                       <td className="p-4">
                         <div className="text-sm">
-                          {bovino.huella ? (
+                          {(bovino.huella || (bovino.imagenes && bovino.imagenes.length > 0)) ? (
                             <div className="flex items-center space-x-2">
                               <div className="text-orange-600 text-lg">👤</div>
                               <div className="font-medium text-orange-700 bg-orange-50 px-2 py-1 rounded">
-                                Registrada
+                                SI
                               </div>
                             </div>
                           ) : (
