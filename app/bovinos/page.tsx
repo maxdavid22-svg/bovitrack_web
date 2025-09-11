@@ -35,6 +35,10 @@ export default function BovinosPage() {
   const [mostrarTagRfid, setMostrarTagRfid] = useState(false);
   const [mostrarHuella, setMostrarHuella] = useState(false);
   const [soloConTag, setSoloConTag] = useState(false);
+  const [modalImagenes, setModalImagenes] = useState<{ abierto: boolean; bovino: Bovino | null }>({
+    abierto: false,
+    bovino: null
+  });
 
   useEffect(() => {
     cargarBovinos();
@@ -84,6 +88,14 @@ export default function BovinosPage() {
     
     return true;
   });
+
+  const abrirModalImagenes = (bovino: Bovino) => {
+    setModalImagenes({ abierto: true, bovino });
+  };
+
+  const cerrarModalImagenes = () => {
+    setModalImagenes({ abierto: false, bovino: null });
+  };
 
   return (
     <div className="space-y-6">
@@ -543,9 +555,13 @@ export default function BovinosPage() {
                         {bovino.imagenes && bovino.imagenes.length > 0 ? (
                           <div className="flex items-center space-x-2">
                             <div className="text-blue-600 text-lg">📷</div>
-                            <div className="font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded">
-                              {bovino.imagenes.length} imagen{bovino.imagenes.length !== 1 ? 'es' : ''}
-                            </div>
+                            <button
+                              onClick={() => abrirModalImagenes(bovino)}
+                              className="font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors cursor-pointer"
+                              title="Ver imágenes"
+                            >
+                              {bovino.imagenes.length}
+                            </button>
                           </div>
                         ) : (
                           <div className="text-gray-400 text-xs">Sin imágenes</div>
@@ -570,6 +586,72 @@ export default function BovinosPage() {
           </div>
         )}
       </div>
+
+      {/* Modal de Imágenes */}
+      {modalImagenes.abierto && modalImagenes.bovino && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            {/* Header del Modal */}
+            <div className="flex items-center justify-between p-6 border-b">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  📷 Imágenes de {modalImagenes.bovino.codigo}
+                </h2>
+                <p className="text-gray-600 text-sm">
+                  {modalImagenes.bovino.nombre || 'Sin nombre'} - {modalImagenes.bovino.imagenes?.length} imagen{modalImagenes.bovino.imagenes?.length !== 1 ? 'es' : ''}
+                </p>
+              </div>
+              <button
+                onClick={cerrarModalImagenes}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Contenido del Modal */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              {modalImagenes.bovino.imagenes && modalImagenes.bovino.imagenes.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {modalImagenes.bovino.imagenes.map((url, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={url}
+                        alt={`Imagen ${index + 1} de ${modalImagenes.bovino?.codigo}`}
+                        className="w-full h-48 object-cover rounded-lg border border-gray-200 hover:shadow-lg transition-shadow"
+                      />
+                      <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                        {index + 1}
+                      </div>
+                      <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                        {modalImagenes.bovino?.codigo}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <div className="text-6xl mb-4">📷</div>
+                  <p className="text-lg">No hay imágenes disponibles</p>
+                  <p className="text-sm">Este bovino no tiene imágenes cargadas</p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer del Modal */}
+            <div className="flex justify-end p-6 border-t bg-gray-50">
+              <button
+                onClick={cerrarModalImagenes}
+                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
