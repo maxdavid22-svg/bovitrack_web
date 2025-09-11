@@ -29,6 +29,8 @@ type Bovino = {
   observaciones: string | null;
   foto: string | null;
   tag_rfid: string | null;
+  huella: string | null;
+  imagenes: string[] | null;
   created_at: string;
 };
 
@@ -67,6 +69,8 @@ export default function EditarBovinoPage() {
   const [ubicacionActual, setUbicacionActual] = useState('');
   const [coordenadas, setCoordenadas] = useState('');
   const [observaciones, setObservaciones] = useState('');
+  const [imagenes, setImagenes] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (bovinoId) {
@@ -106,6 +110,7 @@ export default function EditarBovinoPage() {
         setUbicacionActual(data.ubicacion_actual || '');
         setCoordenadas(data.coordenadas || '');
         setObservaciones(data.observaciones || '');
+        setImagenes(data.imagenes || []);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -132,6 +137,45 @@ export default function EditarBovinoPage() {
     }
   };
 
+  const subirImagen = async (archivo: File) => {
+    setUploading(true);
+    try {
+      // Crear un nombre único para el archivo
+      const nombreArchivo = `${bovinoId}_${Date.now()}_${archivo.name}`;
+      const rutaArchivo = `bovinos/${bovinoId}/${nombreArchivo}`;
+
+      // Subir archivo a Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('imagenes-bovinos')
+        .upload(rutaArchivo, archivo);
+
+      if (error) {
+        console.error('Error subiendo imagen:', error);
+        alert('Error al subir la imagen: ' + error.message);
+        return;
+      }
+
+      // Obtener URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from('imagenes-bovinos')
+        .getPublicUrl(rutaArchivo);
+
+      // Agregar URL a la lista de imágenes
+      setImagenes(prev => [...prev, publicUrl]);
+      
+      alert('Imagen subida exitosamente');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al subir la imagen');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const eliminarImagen = (index: number) => {
+    setImagenes(prev => prev.filter((_, i) => i !== index));
+  };
+
   const guardar = async () => {
     if (!codigo.trim()) {
       alert('El código del bovino es obligatorio');
@@ -156,6 +200,7 @@ export default function EditarBovinoPage() {
         ubicacion_actual: ubicacionActual.trim() || null,
         coordenadas: coordenadas.trim() || null,
         observaciones: observaciones.trim() || null,
+        imagenes: imagenes.length > 0 ? imagenes : null,
       };
 
       console.log('Actualizando bovino con payload:', payload);
@@ -481,6 +526,79 @@ export default function EditarBovinoPage() {
                 placeholder="Observaciones adicionales"
               />
             </div>
+          </div>
+
+          {/* Sección de Imágenes */}
+          <div className="mt-8 border-t pt-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">📷 Fotografías del Bovino</h3>
+            
+            {/* Área de subida */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Subir Nueva Fotografía
+              </label>
+              <div className="flex items-center space-x-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const archivo = e.target.files?.[0];
+                    if (archivo) {
+                      subirImagen(archivo);
+                    }
+                  }}
+                  disabled={uploading}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+                />
+                {uploading && (
+                  <div className="flex items-center text-blue-600">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                    Subiendo...
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 10MB
+              </p>
+            </div>
+
+            {/* Galería de imágenes */}
+            {imagenes.length > 0 && (
+              <div>
+                <h4 className="text-md font-medium text-gray-700 mb-3">
+                  Imágenes actuales ({imagenes.length})
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {imagenes.map((url, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={url}
+                        alt={`Imagen ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                      />
+                      <button
+                        onClick={() => eliminarImagen(index)}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                        title="Eliminar imagen"
+                      >
+                        ×
+                      </button>
+                      <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                        {index + 1}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {imagenes.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <div className="text-4xl mb-2">📷</div>
+                <p>No hay imágenes cargadas para este bovino</p>
+                <p className="text-sm">Sube la primera fotografía usando el botón de arriba</p>
+              </div>
+            )}
           </div>
 
           {/* Botones */}
