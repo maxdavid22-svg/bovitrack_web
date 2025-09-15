@@ -667,8 +667,8 @@ function TopProducersCarne() {
         const sorted = Array.from(bovinoStats.values())
           .map(bovino => {
             const pesoMax = Math.max(...bovino.pesos);
-            const pesoProm = bovino.pesos.reduce((a, b) => a + b, 0) / bovino.pesos.length;
-            const gmdProm = bovino.gmds.length > 0 ? bovino.gmds.reduce((a, b) => a + b, 0) / bovino.gmds.length : 0;
+            const pesoProm = bovino.pesos.reduce((a: number, b: number) => a + b, 0) / bovino.pesos.length;
+            const gmdProm = bovino.gmds.length > 0 ? bovino.gmds.reduce((a: number, b: number) => a + b, 0) / bovino.gmds.length : 0;
             
             return {
               ...bovino,
