@@ -253,6 +253,35 @@ export default function ProduccionPage() {
         </div>
       )}
 
+      {/* Últimos ordeños (verificación rápida) */}
+      {!loading && (
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h3 className="font-semibold mb-4">Últimos Ordeños (30 días)</h3>
+          {ordenhoUltimos30.length === 0 ? (
+            <div className="text-sm text-gray-500">No hay eventos de Ordeño en los últimos 30 días.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-left">
+                  <tr>
+                    <th className="p-3 font-medium">Fecha</th>
+                    <th className="p-3 font-medium">Litros</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ordenhoUltimos30.slice(-10).reverse().map((ev, idx) => (
+                    <tr key={idx} className="border-t">
+                      <td className="p-3">{ev.fecha}</td>
+                      <td className="p-3">{(ev.litros ?? 0).toFixed ? (ev.litros as number).toFixed(1) : ev.litros}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold mb-4">Siguientes pasos</h2>
         <ul className="list-disc pl-6 text-gray-700 space-y-1">
