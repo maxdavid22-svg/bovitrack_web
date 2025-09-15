@@ -352,7 +352,9 @@ function ListaBovinosCorta({ finalidad }: { finalidad: 'Carne' | 'Leche' | 'Dobl
 }
 
 function MiniBars({ data, color, unit }: { data: Array<{ fecha: string; total: number }>; color: string; unit: string }) {
-  const max = Math.max(1, ...data.map(d => d.total));
+  // Solo considerar días con datos para el máximo
+  const dataWithValues = data.filter(d => d.total > 0);
+  const max = dataWithValues.length > 0 ? Math.max(...dataWithValues.map(d => d.total)) : 1;
   const hasData = data.some(d => d.total > 0);
 
   // Forzar color con inline-style para evitar overrides
@@ -437,7 +439,11 @@ function MiniBarsSVG({ data, color, unit }: { data: Array<{ fecha: string; total
   const padding = { top: 10, right: 10, bottom: 20, left: 24 };
   const innerW = width - padding.left - padding.right;
   const innerH = height - padding.top - padding.bottom;
-  const max = Math.max(1, ...data.map(d => d.total));
+  
+  // Solo considerar días con datos para el máximo
+  const dataWithValues = data.filter(d => d.total > 0);
+  const max = dataWithValues.length > 0 ? Math.max(...dataWithValues.map(d => d.total)) : 1;
+  
   const barGap = 4;
   const barW = Math.max(2, Math.floor(innerW / data.length) - barGap);
 
