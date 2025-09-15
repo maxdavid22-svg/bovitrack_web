@@ -344,7 +344,16 @@ function ListaBovinosCorta({ finalidad }: { finalidad: 'Carne' | 'Leche' | 'Dobl
 function MiniBars({ data, color, unit }: { data: Array<{ fecha: string; total: number }>; color: string; unit: string }) {
   const max = Math.max(1, ...data.map(d => d.total));
   const hasData = data.some(d => d.total > 0);
-  
+
+  // Forzar color con inline-style para evitar overrides
+  const colorHexMap: Record<string, string> = {
+    'bg-blue-500': '#3B82F6',
+    'bg-orange-500': '#F59E0B',
+    'bg-green-500': '#22C55E',
+    'bg-red-500': '#EF4444',
+  };
+  const barColor = colorHexMap[color] || '#3B82F6';
+
   if (!hasData) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -353,7 +362,7 @@ function MiniBars({ data, color, unit }: { data: Array<{ fecha: string; total: n
       </div>
     );
   }
-  
+
   return (
     <div>
       <div className="flex items-end gap-1 h-32 overflow-x-auto pb-2">
@@ -361,9 +370,9 @@ function MiniBars({ data, color, unit }: { data: Array<{ fecha: string; total: n
           const height = d.total > 0 ? Math.max(20, (d.total / max) * 100) : 0; // Mínimo 20px
           return (
             <div key={i} className="flex flex-col items-center min-w-0" title={`${d.fecha}: ${d.total} ${unit}`}>
-              <div 
-                className={`${color} w-4 rounded-t shadow-sm`} 
-                style={{ height: `${height}%` }}
+              <div
+                className={`w-4 rounded-t shadow-sm`}
+                style={{ height: `${height}%`, backgroundColor: barColor }}
               ></div>
               {d.total > 0 && (
                 <div className="text-xs text-gray-600 mt-1 font-mono">
