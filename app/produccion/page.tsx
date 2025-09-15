@@ -445,12 +445,13 @@ function MiniBarsSVG({ data, color, unit }: { data: Array<{ fecha: string; total
   const max = dataWithValues.length > 0 ? Math.max(...dataWithValues.map(d => d.total)) : 1;
   
   // Debug temporal
+  const topValues = dataWithValues.sort((a, b) => b.total - a.total).slice(0, 5);
   console.log('MiniBarsSVG Debug:', {
     color,
     totalDays: data.length,
     daysWithData: dataWithValues.length,
     max,
-    topValues: dataWithValues.sort((a, b) => b.total - a.total).slice(0, 5)
+    topValues: topValues.map(v => ({ fecha: v.fecha, total: v.total }))
   });
   
   const barGap = 4;
@@ -473,7 +474,7 @@ function MiniBarsSVG({ data, color, unit }: { data: Array<{ fecha: string; total
           return (
             <g key={i}>
               <rect x={x} y={padding.top + innerH - h} width={barW} height={h} fill={color} rx={2} />
-              {h > 0.55 * innerH && i % 4 === 0 && (
+              {h > 0.3 * innerH && i % 3 === 0 && (
                 <text x={x + barW / 2} y={padding.top + innerH - h - 4} textAnchor="middle" fontSize="10" fill="#374151">
                   {d.total.toFixed(1)}
                 </text>
