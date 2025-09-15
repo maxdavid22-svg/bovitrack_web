@@ -21,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <a className="px-3 py-2 rounded hover:bg-gray-100 transition" href="/eventos">📅 Eventos</a>
               <a className="px-3 py-2 rounded hover:bg-gray-100 transition" href="/historial">📊 Historial</a>
               <a className="px-3 py-2 rounded hover:bg-gray-100 transition" href="/reportes">📈 Reportes</a>
+              <a className="px-3 py-2 rounded hover:bg-gray-100 transition" href="/produccion">🏭 Producción</a>
             </nav>
           </div>
         </header>
