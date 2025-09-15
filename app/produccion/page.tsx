@@ -44,6 +44,7 @@ export default function ProduccionPage() {
   });
   const [alertas, setAlertas] = useState<any[]>([]);
   const [alertasLoading, setAlertasLoading] = useState(true);
+  const [mostrarAlertas, setMostrarAlertas] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -187,6 +188,22 @@ export default function ProduccionPage() {
       <div className="bg-white rounded-lg shadow p-4 mb-6 flex flex-wrap gap-3">
         <a href="/nuevo-evento?tipo=Ordeño" className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition">🥛 Registrar ordeño</a>
         <a href="/nuevo-evento?tipo=Engorde" className="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700 transition">📈 Registrar engorde</a>
+        <button 
+          onClick={() => setMostrarAlertas(!mostrarAlertas)}
+          className={`px-4 py-2 rounded transition flex items-center gap-2 ${
+            alertas.length > 0 
+              ? 'bg-red-600 text-white hover:bg-red-700' 
+              : 'bg-green-600 text-white hover:bg-green-700'
+          }`}
+        >
+          <span className="text-lg">🚨</span>
+          Alertas de Inocuidad
+          {alertas.length > 0 && (
+            <span className="bg-white text-red-600 rounded-full px-2 py-1 text-xs font-bold">
+              {alertas.length}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Filtros para mostrar detalles */}
@@ -225,129 +242,125 @@ export default function ProduccionPage() {
         </div>
       )}
 
-      {/* Sección de Alertas de Inocuidad */}
-      {!loading && !alertasLoading && (
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <span className="text-2xl">🚨</span>
-            Alertas de Inocuidad
-          </h2>
-          
-          {alertas.length === 0 ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-              <div className="text-green-600 text-4xl mb-2">✅</div>
-              <h3 className="text-lg font-semibold text-green-800 mb-1">Sin alertas activas</h3>
-              <p className="text-green-600">Todos los bovinos están en condiciones óptimas de inocuidad</p>
+      {/* Sección de Alertas de Inocuidad - Solo visible cuando se presiona el botón */}
+      {mostrarAlertas && !loading && !alertasLoading && (
+        <div className="mb-6">
+          <div className="bg-white rounded-lg shadow-lg border-2 border-red-200">
+            <div className="bg-red-50 border-b border-red-200 p-4 rounded-t-lg">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-red-800 flex items-center gap-2">
+                  <span className="text-2xl">🚨</span>
+                  Alertas de Inocuidad
+                </h2>
+                <button 
+                  onClick={() => setMostrarAlertas(false)}
+                  className="text-red-600 hover:text-red-800 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {alertas.map((alerta) => {
-                const bovino = Array.isArray(alerta.bovinos) ? alerta.bovinos[0] : alerta.bovinos;
-                const tipoAlerta = Array.isArray(alerta.tipos_alertas) ? alerta.tipos_alertas[0] : alerta.tipos_alertas;
-                
-                const getNivelRiesgoStyles = (nivel: string) => {
-                  switch (nivel) {
-                    case 'Crítico':
-                      return 'bg-red-100 border-red-300 text-red-800';
-                    case 'Alto':
-                      return 'bg-orange-100 border-orange-300 text-orange-800';
-                    case 'Medio':
-                      return 'bg-yellow-100 border-yellow-300 text-yellow-800';
-                    case 'Bajo':
-                      return 'bg-blue-100 border-blue-300 text-blue-800';
-                    default:
-                      return 'bg-gray-100 border-gray-300 text-gray-800';
-                  }
-                };
+            
+            <div className="p-4">
+              {alertas.length === 0 ? (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+                  <div className="text-green-600 text-4xl mb-2">✅</div>
+                  <h3 className="text-lg font-semibold text-green-800 mb-1">Sin alertas activas</h3>
+                  <p className="text-green-600">Todos los bovinos están en condiciones óptimas de inocuidad</p>
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {alertas.map((alerta) => {
+                    const bovino = Array.isArray(alerta.bovinos) ? alerta.bovinos[0] : alerta.bovinos;
+                    const tipoAlerta = Array.isArray(alerta.tipos_alertas) ? alerta.tipos_alertas[0] : alerta.tipos_alertas;
+                    
+                    const getNivelRiesgoStyles = (nivel: string) => {
+                      switch (nivel) {
+                        case 'Crítico':
+                          return 'bg-red-100 border-red-300 text-red-800';
+                        case 'Alto':
+                          return 'bg-orange-100 border-orange-300 text-orange-800';
+                        case 'Medio':
+                          return 'bg-yellow-100 border-yellow-300 text-yellow-800';
+                        case 'Bajo':
+                          return 'bg-blue-100 border-blue-300 text-blue-800';
+                        default:
+                          return 'bg-gray-100 border-gray-300 text-gray-800';
+                      }
+                    };
 
-                const getNivelRiesgoIcon = (nivel: string) => {
-                  switch (nivel) {
-                    case 'Crítico':
-                      return '🔴';
-                    case 'Alto':
-                      return '🟠';
-                    case 'Medio':
-                      return '🟡';
-                    case 'Bajo':
-                      return '🔵';
-                    default:
-                      return '⚪';
-                  }
-                };
+                    const getNivelRiesgoIcon = (nivel: string) => {
+                      switch (nivel) {
+                        case 'Crítico':
+                          return '🔴';
+                        case 'Alto':
+                          return '🟠';
+                        case 'Medio':
+                          return '🟡';
+                        case 'Bajo':
+                          return '🔵';
+                        default:
+                          return '⚪';
+                      }
+                    };
 
-                return (
-                  <div key={alerta.id} className={`border-l-4 rounded-lg p-4 ${getNivelRiesgoStyles(alerta.nivel_riesgo)}`}>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-lg">{getNivelRiesgoIcon(alerta.nivel_riesgo)}</span>
-                          <h3 className="font-semibold text-lg">{alerta.titulo}</h3>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getNivelRiesgoStyles(alerta.nivel_riesgo)}`}>
-                            {alerta.nivel_riesgo}
-                          </span>
-                        </div>
-                        
-                        <p className="text-sm mb-3">{alerta.descripcion}</p>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <span className="font-medium">Bovino:</span>
-                            <div className="text-gray-600">
-                              {bovino?.codigo} - {bovino?.nombre || 'Sin nombre'}
+                    return (
+                      <div key={alerta.id} className={`border-l-4 rounded-lg p-3 ${getNivelRiesgoStyles(alerta.nivel_riesgo)}`}>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-lg">{getNivelRiesgoIcon(alerta.nivel_riesgo)}</span>
+                              <h3 className="font-semibold text-sm">{alerta.titulo}</h3>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getNivelRiesgoStyles(alerta.nivel_riesgo)}`}>
+                                {alerta.nivel_riesgo}
+                              </span>
                             </div>
-                            <div className="text-gray-500 text-xs">
-                              {bovino?.finalidad_productiva}
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <span className="font-medium">Tipo de Alerta:</span>
-                            <div className="text-gray-600">{tipoAlerta?.nombre}</div>
-                          </div>
-                          
-                          <div>
-                            <span className="font-medium">Detectada:</span>
-                            <div className="text-gray-600">
-                              {new Date(alerta.fecha_deteccion).toLocaleDateString('es-ES')}
-                            </div>
-                            {alerta.fecha_vencimiento && (
-                              <>
-                                <span className="font-medium">Vence:</span>
+                            
+                            <p className="text-xs mb-2">{alerta.descripcion}</p>
+                            
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <span className="font-medium">Bovino:</span>
                                 <div className="text-gray-600">
-                                  {new Date(alerta.fecha_vencimiento).toLocaleDateString('es-ES')}
+                                  {bovino?.codigo} - {bovino?.nombre || 'Sin nombre'}
                                 </div>
-                              </>
-                            )}
+                              </div>
+                              
+                              <div>
+                                <span className="font-medium">Tipo:</span>
+                                <div className="text-gray-600">{tipoAlerta?.nombre}</div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-col gap-1 ml-3">
+                            <button 
+                              className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition"
+                              onClick={() => {
+                                // TODO: Implementar acción de ver detalles
+                                console.log('Ver detalles de alerta:', alerta.id);
+                              }}
+                            >
+                              Ver
+                            </button>
+                            <button 
+                              className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 transition"
+                              onClick={() => {
+                                // TODO: Implementar resolución de alerta
+                                console.log('Resolver alerta:', alerta.id);
+                              }}
+                            >
+                              Resolver
+                            </button>
                           </div>
                         </div>
                       </div>
-                      
-                      <div className="flex flex-col gap-2 ml-4">
-                        <button 
-                          className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition"
-                          onClick={() => {
-                            // TODO: Implementar acción de ver detalles
-                            console.log('Ver detalles de alerta:', alerta.id);
-                          }}
-                        >
-                          Ver Detalles
-                        </button>
-                        <button 
-                          className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition"
-                          onClick={() => {
-                            // TODO: Implementar resolución de alerta
-                            console.log('Resolver alerta:', alerta.id);
-                          }}
-                        >
-                          Marcar Resuelta
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       )}
 

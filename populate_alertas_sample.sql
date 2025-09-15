@@ -7,9 +7,12 @@ SET
   es_critico = TRUE,
   nivel_riesgo = 'Crítico',
   observaciones_inocuidad = 'Enfermedad detectada que afecta la inocuidad alimentaria'
-WHERE tipo = 'Vacunación' 
-  AND fecha >= CURRENT_DATE - INTERVAL '5 days'
-LIMIT 2;
+WHERE id IN (
+  SELECT id FROM eventos 
+  WHERE tipo = 'Vacunación' 
+    AND fecha >= CURRENT_DATE - INTERVAL '5 days'
+  LIMIT 2
+);
 
 -- Agregar eventos de vacunación con fechas de vencimiento
 INSERT INTO eventos (bovino_id, tipo, fecha, descripcion, fecha_vencimiento, nivel_riesgo, observaciones_inocuidad, created_at)
@@ -24,6 +27,7 @@ SELECT
   NOW()
 FROM bovinos b 
 WHERE b.finalidad_productiva IN ('Leche', 'Carne')
+ORDER BY b.created_at
 LIMIT 3;
 
 INSERT INTO eventos (bovino_id, tipo, fecha, descripcion, fecha_vencimiento, nivel_riesgo, observaciones_inocuidad, created_at)
@@ -38,6 +42,7 @@ SELECT
   NOW()
 FROM bovinos b 
 WHERE b.finalidad_productiva IN ('Leche', 'Carne')
+ORDER BY b.created_at
 LIMIT 4;
 
 -- Agregar eventos de retiro sanitario
@@ -54,6 +59,7 @@ SELECT
   NOW()
 FROM bovinos b 
 WHERE b.finalidad_productiva IN ('Leche', 'Carne')
+ORDER BY b.created_at
 LIMIT 1;
 
 -- Agregar eventos de cuarentena
@@ -68,6 +74,7 @@ SELECT
   NOW()
 FROM bovinos b 
 WHERE b.finalidad_productiva IN ('Leche', 'Carne')
+ORDER BY b.created_at
 LIMIT 2;
 
 -- Agregar eventos de tratamiento vencido
@@ -83,6 +90,7 @@ SELECT
   NOW()
 FROM bovinos b 
 WHERE b.finalidad_productiva IN ('Leche', 'Carne')
+ORDER BY b.created_at
 LIMIT 2;
 
 -- Ejecutar función para generar alertas
