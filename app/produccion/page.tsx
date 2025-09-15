@@ -373,7 +373,8 @@ function MiniBars({ data, color, unit }: { data: Array<{ fecha: string; total: n
     <div>
       <div className="flex items-end gap-1 h-32 overflow-x-auto pb-2">
         {data.map((d, i) => {
-          const height = d.total > 0 ? Math.max(20, (d.total / max) * 100) : 0; // Mínimo 20px
+          // Altura proporcional real, con mínimo de 2px para que se vea algo
+          const height = d.total > 0 ? Math.max(2, (d.total / max) * 100) : 0;
           return (
             <div key={i} className="flex flex-col items-center min-w-0" title={`${d.fecha}: ${d.total} ${unit}`}>
               <div
