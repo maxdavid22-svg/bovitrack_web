@@ -267,6 +267,29 @@ export default function ProduccionPage() {
         </div>
       )}
 
+      {/* Ranking de Producción */}
+      {!loading && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Top 5 Bovinos de Leche */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <span className="text-2xl">🥛</span>
+              Top 5 Productores de Leche (30 días)
+            </h3>
+            <TopProducersLeche />
+          </div>
+
+          {/* Top 5 Bovinos de Carne */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <span className="text-2xl">🥩</span>
+              Top 5 Productores de Carne (30 días)
+            </h3>
+            <TopProducersCarne />
+          </div>
+        </div>
+      )}
+
       {/* Últimos ordeños (verificación rápida) */}
       {!loading && (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
@@ -444,15 +467,6 @@ function MiniBarsSVG({ data, color, unit }: { data: Array<{ fecha: string; total
   const dataWithValues = data.filter(d => d.total > 0);
   const max = dataWithValues.length > 0 ? Math.max(...dataWithValues.map(d => d.total)) : 1;
   
-  // Debug temporal
-  const topValues = dataWithValues.sort((a, b) => b.total - a.total).slice(0, 5);
-  console.log('MiniBarsSVG Debug:', {
-    color,
-    totalDays: data.length,
-    daysWithData: dataWithValues.length,
-    max,
-    topValues: topValues.map(v => ({ fecha: v.fecha, total: v.total }))
-  });
   
   const barGap = 4;
   const barW = Math.max(2, Math.floor(innerW / data.length) - barGap);
@@ -498,6 +512,204 @@ function MiniBarsSVG({ data, color, unit }: { data: Array<{ fecha: string; total
         })}
       </svg>
       <div className="mt-2 text-xs text-gray-500 text-center">Últimos 30 días (máx: {max} {unit})</div>
+    </div>
+  );
+}
+
+// Componente para Top Productores de Leche
+function TopProducersLeche() {
+  const [topLeche, setTopLeche] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('eventos')
+          .select(`
+            bovino_id,
+            litros,
+            fecha,
+            bovinos!inner(
+              codigo,
+              nombre,
+              raza,
+              finalidad_productiva,
+              nombre_propietario
+            )
+          `)
+          .eq('tipo', 'Ordeño')
+          .gte('fecha', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+          .not('litros', 'is', null);
+
+        if (error) throw error;
+
+        // Agrupar por bovino y sumar litros
+        const bovinoStats = new Map();
+        data?.forEach(evento => {
+          const bovino = evento.bovinos;
+          const key = bovino.codigo;
+          
+          if (!bovinoStats.has(key)) {
+            bovinoStats.set(key, {
+              codigo: bovino.codigo,
+              nombre: bovino.nombre,
+              raza: bovino.raza,
+              propietario: bovino.nombre_propietario,
+              totalLitros: 0,
+              eventos: 0
+            });
+          }
+          
+          const stats = bovinoStats.get(key);
+          stats.totalLitros += evento.litros || 0;
+          stats.eventos += 1;
+        });
+
+        // Convertir a array y ordenar por total de litros
+        const sorted = Array.from(bovinoStats.values())
+          .sort((a, b) => b.totalLitros - a.totalLitros)
+          .slice(0, 5);
+
+        setTopLeche(sorted);
+      } catch (e) {
+        console.error('Error cargando top productores de leche:', e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  if (loading) return <div className="text-sm text-gray-500">Cargando...</div>;
+  if (topLeche.length === 0) return <div className="text-sm text-gray-500">No hay datos de producción</div>;
+
+  return (
+    <div className="space-y-3">
+      {topLeche.map((bovino, index) => (
+        <div key={bovino.codigo} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full text-sm font-bold">
+              {index + 1}
+            </div>
+            <div>
+              <div className="font-semibold text-blue-900">{bovino.codigo}</div>
+              <div className="text-sm text-blue-700">{bovino.nombre || 'Sin nombre'}</div>
+              <div className="text-xs text-blue-600">{bovino.raza} • {bovino.propietario}</div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="font-bold text-blue-900">{bovino.totalLitros.toFixed(1)} L</div>
+            <div className="text-xs text-blue-600">{bovino.eventos} eventos</div>
+            <div className="text-xs text-blue-600">{(bovino.totalLitros / bovino.eventos).toFixed(1)} L/prom</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Componente para Top Productores de Carne
+function TopProducersCarne() {
+  const [topCarne, setTopCarne] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('eventos')
+          .select(`
+            bovino_id,
+            peso_kg,
+            gmd,
+            fecha,
+            bovinos!inner(
+              codigo,
+              nombre,
+              raza,
+              finalidad_productiva,
+              nombre_propietario
+            )
+          `)
+          .eq('tipo', 'Engorde')
+          .gte('fecha', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+          .not('peso_kg', 'is', null);
+
+        if (error) throw error;
+
+        // Agrupar por bovino y calcular métricas
+        const bovinoStats = new Map();
+        data?.forEach(evento => {
+          const bovino = evento.bovinos;
+          const key = bovino.codigo;
+          
+          if (!bovinoStats.has(key)) {
+            bovinoStats.set(key, {
+              codigo: bovino.codigo,
+              nombre: bovino.nombre,
+              raza: bovino.raza,
+              propietario: bovino.nombre_propietario,
+              pesos: [],
+              gmds: []
+            });
+          }
+          
+          const stats = bovinoStats.get(key);
+          if (evento.peso_kg) stats.pesos.push(evento.peso_kg);
+          if (evento.gmd) stats.gmds.push(evento.gmd);
+        });
+
+        // Calcular métricas y ordenar por peso máximo
+        const sorted = Array.from(bovinoStats.values())
+          .map(bovino => {
+            const pesoMax = Math.max(...bovino.pesos);
+            const pesoProm = bovino.pesos.reduce((a, b) => a + b, 0) / bovino.pesos.length;
+            const gmdProm = bovino.gmds.length > 0 ? bovino.gmds.reduce((a, b) => a + b, 0) / bovino.gmds.length : 0;
+            
+            return {
+              ...bovino,
+              pesoMaximo: pesoMax,
+              pesoPromedio: pesoProm,
+              gmdPromedio: gmdProm,
+              eventos: bovino.pesos.length
+            };
+          })
+          .sort((a, b) => b.pesoMaximo - a.pesoMaximo)
+          .slice(0, 5);
+
+        setTopCarne(sorted);
+      } catch (e) {
+        console.error('Error cargando top productores de carne:', e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  if (loading) return <div className="text-sm text-gray-500">Cargando...</div>;
+  if (topCarne.length === 0) return <div className="text-sm text-gray-500">No hay datos de engorde</div>;
+
+  return (
+    <div className="space-y-3">
+      {topCarne.map((bovino, index) => (
+        <div key={bovino.codigo} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-8 h-8 bg-green-500 text-white rounded-full text-sm font-bold">
+              {index + 1}
+            </div>
+            <div>
+              <div className="font-semibold text-green-900">{bovino.codigo}</div>
+              <div className="text-sm text-green-700">{bovino.nombre || 'Sin nombre'}</div>
+              <div className="text-xs text-green-600">{bovino.raza} • {bovino.propietario}</div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="font-bold text-green-900">{bovino.pesoMaximo.toFixed(1)} kg</div>
+            <div className="text-xs text-green-600">{bovino.eventos} eventos</div>
+            <div className="text-xs text-green-600">GMD: {bovino.gmdPromedio.toFixed(2)} kg/día</div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
