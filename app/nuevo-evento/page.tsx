@@ -17,6 +17,10 @@ type EventoForm = {
   tipo: string;
   fecha: string;
   descripcion: string;
+  litros?: string;
+  turno?: 'Mañana' | 'Tarde' | 'Noche' | '';
+  peso_kg?: string;
+  gmd?: string;
 };
 
 export default function NuevoEventoPage() {
@@ -29,10 +33,16 @@ export default function NuevoEventoPage() {
     bovino_codigo: '',
     tipo: '',
     fecha: new Date().toISOString().split('T')[0],
-    descripcion: ''
+    descripcion: '',
+    litros: '',
+    turno: '',
+    peso_kg: '',
+    gmd: ''
   });
 
   const tiposEvento = [
+    { value: 'Ordeño', label: 'Ordeño' },
+    { value: 'Engorde', label: 'Engorde' },
     { value: 'Registro', label: 'Registro' },
     { value: 'Vacunación', label: 'Vacunación' },
     { value: 'Tratamiento', label: 'Tratamiento' },
@@ -84,6 +94,28 @@ export default function NuevoEventoPage() {
       return;
     }
 
+    // Validaciones por tipo
+    if (form.tipo === 'Ordeño') {
+      if (!form.litros || isNaN(Number(form.litros))) {
+        alert('Ingrese litros válidos para Ordeño');
+        return;
+      }
+      if (!form.turno) {
+        alert('Seleccione turno de Ordeño');
+        return;
+      }
+    }
+    if (form.tipo === 'Engorde') {
+      if (!form.peso_kg || isNaN(Number(form.peso_kg))) {
+        alert('Ingrese peso (kg) válido para Engorde');
+        return;
+      }
+      if (form.gmd && isNaN(Number(form.gmd))) {
+        alert('GMD debe ser numérico (kg/día)');
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       // Buscar el bovino por código
@@ -117,7 +149,11 @@ export default function NuevoEventoPage() {
           bovino_id: bovinoData.id,
           tipo: form.tipo,
           fecha: form.fecha,
-          descripcion: form.descripcion || null
+          descripcion: form.descripcion || null,
+          litros: form.tipo === 'Ordeño' ? Number(form.litros) : null,
+          turno: form.tipo === 'Ordeño' ? (form.turno || null) : null,
+          peso_kg: form.tipo === 'Engorde' ? Number(form.peso_kg) : null,
+          gmd: form.tipo === 'Engorde' && form.gmd ? Number(form.gmd) : null
         });
 
       if (eventoError) {
@@ -198,6 +234,63 @@ export default function NuevoEventoPage() {
                   ))}
                 </select>
               </div>
+
+              {/* Campos dinámicos por tipo */}
+              {form.tipo === 'Ordeño' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Litros</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={form.litros}
+                      onChange={(e) => setForm({ ...form, litros: e.target.value })}
+                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="Ej: 18.5"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Turno</label>
+                    <select
+                      value={form.turno}
+                      onChange={(e) => setForm({ ...form, turno: e.target.value as any })}
+                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                      <option value="">Seleccionar turno</option>
+                      <option value="Mañana">Mañana</option>
+                      <option value="Tarde">Tarde</option>
+                      <option value="Noche">Noche</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {form.tipo === 'Engorde' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Peso (kg)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={form.peso_kg}
+                      onChange={(e) => setForm({ ...form, peso_kg: e.target.value })}
+                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="Ej: 420.0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">GMD (kg/día) opcional</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={form.gmd}
+                      onChange={(e) => setForm({ ...form, gmd: e.target.value })}
+                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="Ej: 0.85"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
