@@ -100,8 +100,6 @@ export default function ProduccionPage() {
           const totalLitros = eventosDelDia.reduce((acc, evento) => acc + (evento.litros || 0), 0);
           return { fecha, total: totalLitros };
         });
-        console.log('Ordenos:', ordenos);
-        console.log('Litros por día:', litrosPorDia);
         setSerieLitrosDia(litrosPorDia);
 
         // Cargar eventos de Engorde últimos 30 días
@@ -345,16 +343,26 @@ function ListaBovinosCorta({ finalidad }: { finalidad: 'Carne' | 'Leche' | 'Dobl
 
 function MiniBars({ data, color, unit }: { data: Array<{ fecha: string; total: number }>; color: string; unit: string }) {
   const max = Math.max(1, ...data.map(d => d.total));
+  const hasData = data.some(d => d.total > 0);
+  
   return (
     <div>
       <div className="flex items-end gap-1 h-28 overflow-x-auto">
-        {data.map((d, i) => (
-          <div key={i} className="flex flex-col items-center" title={`${d.fecha}: ${d.total} ${unit}`}>
-            <div className={`${color} w-2 rounded`} style={{ height: `${(d.total / max) * 100}%` }}></div>
-          </div>
-        ))}
+        {data.map((d, i) => {
+          const height = d.total > 0 ? Math.max(4, (d.total / max) * 100) : 0; // Mínimo 4px para que se vea
+          return (
+            <div key={i} className="flex flex-col items-center" title={`${d.fecha}: ${d.total} ${unit}`}>
+              <div 
+                className={`${color} w-3 rounded-t`} 
+                style={{ height: `${height}%` }}
+              ></div>
+            </div>
+          );
+        })}
       </div>
-      <div className="mt-2 text-xs text-gray-500">Últimos 30 días</div>
+      <div className="mt-2 text-xs text-gray-500">
+        {hasData ? `Últimos 30 días (máx: ${max} ${unit})` : 'Últimos 30 días'}
+      </div>
     </div>
   );
 }
