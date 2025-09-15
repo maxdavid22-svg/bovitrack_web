@@ -24,6 +24,7 @@ type Bovino = {
   tag_rfid: string | null;
   huella: string | null;
   imagenes: string[] | null;
+  finalidad_productiva: string | null;
   created_at: string;
 };
 
@@ -32,6 +33,7 @@ export default function BovinosPage() {
   const [items, setItems] = useState<Bovino[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState('');
+  const [filtroFinalidad, setFiltroFinalidad] = useState('');
   const [mostrarTagRfid, setMostrarTagRfid] = useState(false);
   const [mostrarHuella, setMostrarHuella] = useState(false);
   const [soloConTag, setSoloConTag] = useState(false);
@@ -48,7 +50,7 @@ export default function BovinosPage() {
     try {
       const { data, error } = await supabase
         .from('bovinos')
-        .select('id, codigo, nombre, raza, sexo, estado, fecha_nacimiento, peso_nacimiento, peso_actual, color, marcas, id_propietario, nombre_propietario, ubicacion_actual, coordenadas, observaciones, foto, tag_rfid, huella, imagenes, created_at')
+        .select('id, codigo, nombre, raza, sexo, estado, fecha_nacimiento, peso_nacimiento, peso_actual, color, marcas, id_propietario, nombre_propietario, ubicacion_actual, coordenadas, observaciones, foto, tag_rfid, huella, imagenes, finalidad_productiva, created_at')
         .order('created_at', { ascending: false })
         .limit(200);
       
@@ -70,6 +72,11 @@ export default function BovinosPage() {
       return false;
     }
     
+    // Filtro por Finalidad Productiva
+    if (filtroFinalidad && bovino.finalidad_productiva !== filtroFinalidad) {
+      return false;
+    }
+    
     // Filtro de búsqueda
     if (filtro) {
       return (
@@ -82,6 +89,7 @@ export default function BovinosPage() {
         (bovino.ubicacion_actual && bovino.ubicacion_actual.toLowerCase().includes(filtro.toLowerCase())) ||
         (bovino.tag_rfid && bovino.tag_rfid.toLowerCase().includes(filtro.toLowerCase())) ||
         (bovino.huella && bovino.huella.toLowerCase().includes(filtro.toLowerCase())) ||
+        (bovino.finalidad_productiva && bovino.finalidad_productiva.toLowerCase().includes(filtro.toLowerCase())) ||
         (bovino.imagenes && bovino.imagenes.some(img => img.toLowerCase().includes(filtro.toLowerCase()))) ||
         (filtro.toLowerCase().includes('huella') && (bovino.huella || (bovino.imagenes && bovino.imagenes.length > 0)))
       );
@@ -395,12 +403,28 @@ export default function BovinosPage() {
             <span>👤 Mostrar Huella</span>
           </button>
 
+          {/* Filtro por Finalidad Productiva */}
+          <select
+            value={filtroFinalidad}
+            onChange={(e) => setFiltroFinalidad(e.target.value)}
+            className="px-4 py-2 rounded-lg font-medium border-2 border-gray-200 bg-white text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+          >
+            <option value="">🏭 Todas las finalidades</option>
+            <option value="Carne">🥩 Carne</option>
+            <option value="Leche">🥛 Leche</option>
+            <option value="Doble propósito">🔄 Doble propósito</option>
+            <option value="Engorde">📈 Engorde</option>
+            <option value="Reproducción">👶 Reproducción</option>
+            <option value="Desconocido">❓ Desconocido</option>
+          </select>
+
           {/* Limpiar filtros */}
-          {(filtro || soloConTag) && (
+          {(filtro || soloConTag || filtroFinalidad) && (
             <button
               onClick={() => {
                 setFiltro('');
                 setSoloConTag(false);
+                setFiltroFinalidad('');
               }}
               className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium bg-red-100 text-red-700 border-2 border-red-200 hover:bg-red-200 transition-all duration-200"
             >
@@ -410,7 +434,7 @@ export default function BovinosPage() {
         </div>
 
         {/* Indicadores de filtros activos */}
-        {(filtro || soloConTag) && (
+        {(filtro || soloConTag || filtroFinalidad) && (
           <div className="mt-4 flex flex-wrap gap-2">
             {filtro && (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
@@ -429,6 +453,17 @@ export default function BovinosPage() {
                 <button
                   onClick={() => setSoloConTag(false)}
                   className="ml-2 text-purple-600 hover:text-purple-800"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {filtroFinalidad && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                🏭 {filtroFinalidad}
+                <button
+                  onClick={() => setFiltroFinalidad('')}
+                  className="ml-2 text-green-600 hover:text-green-800"
                 >
                   ×
                 </button>
@@ -457,6 +492,7 @@ export default function BovinosPage() {
                   <th className="p-4 font-medium">Nombre</th>
                   <th className="p-4 font-medium">Raza</th>
                   <th className="p-4 font-medium">Sexo</th>
+                  <th className="p-4 font-medium">Finalidad</th>
                   <th className="p-4 font-medium">Estado</th>
                   <th className="p-4 font-medium">Peso</th>
                   <th className="p-4 font-medium">Propietario</th>
@@ -503,6 +539,27 @@ export default function BovinosPage() {
                     </td>
                     <td className="p-4">{bovino.raza || '—'}</td>
                     <td className="p-4">{bovino.sexo || '—'}</td>
+                    <td className="p-4">
+                      {bovino.finalidad_productiva ? (
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          bovino.finalidad_productiva === 'Carne' ? 'bg-red-100 text-red-800' :
+                          bovino.finalidad_productiva === 'Leche' ? 'bg-blue-100 text-blue-800' :
+                          bovino.finalidad_productiva === 'Doble propósito' ? 'bg-purple-100 text-purple-800' :
+                          bovino.finalidad_productiva === 'Engorde' ? 'bg-orange-100 text-orange-800' :
+                          bovino.finalidad_productiva === 'Reproducción' ? 'bg-pink-100 text-pink-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {bovino.finalidad_productiva === 'Carne' ? '🥩' :
+                           bovino.finalidad_productiva === 'Leche' ? '🥛' :
+                           bovino.finalidad_productiva === 'Doble propósito' ? '🔄' :
+                           bovino.finalidad_productiva === 'Engorde' ? '📈' :
+                           bovino.finalidad_productiva === 'Reproducción' ? '👶' :
+                           '❓'} {bovino.finalidad_productiva}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">—</span>
+                      )}
+                    </td>
                     <td className="p-4">
                       <span className={`px-2 py-1 rounded-full text-xs ${
                         bovino.estado === 'Activo' ? 'bg-green-100 text-green-800' : 

@@ -36,6 +36,7 @@ type Bovino = {
   coordenadas?: string | null;
   observaciones?: string | null;
   foto?: string | null;
+  finalidad_productiva?: string | null;
 };
 type EventoInput = { 
   id?: string; 
@@ -127,6 +128,14 @@ export async function POST(req: NextRequest) {
     // Upsert bovinos (onConflict por codigo o id si lo traes)
     if (bovinos.length) {
       try {
+        // Validar finalidad_productiva si está presente
+        const finalidadesValidas = ['Carne', 'Leche', 'Doble propósito', 'Engorde', 'Reproducción', 'Desconocido'];
+        for (const bovino of bovinos) {
+          if (bovino.finalidad_productiva && !finalidadesValidas.includes(bovino.finalidad_productiva)) {
+            throw new Error(`Finalidad productiva inválida: "${bovino.finalidad_productiva}". Valores permitidos: ${finalidadesValidas.join(', ')}`);
+          }
+        }
+        
         const { error } = await supabaseAdmin.from('bovinos').upsert(bovinos, { onConflict: 'codigo' });
         if (error) throw error;
       } catch (e: any) {
