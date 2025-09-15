@@ -272,7 +272,7 @@ export default function ProduccionPage() {
                   {ordenhoUltimos30.slice(-10).reverse().map((ev, idx) => (
                     <tr key={idx} className="border-t">
                       <td className="p-3">{ev.fecha}</td>
-                      <td className="p-3">{(ev.litros ?? 0).toFixed ? (ev.litros as number).toFixed(1) : ev.litros}</td>
+                      <td className="p-3">{typeof ev.litros === 'number' ? ev.litros.toFixed(1) : ev.litros}</td>
                     </tr>
                   ))}
                 </tbody>
