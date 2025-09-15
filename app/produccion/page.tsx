@@ -62,6 +62,12 @@ export default function ProduccionPage() {
         <p className="text-green-100">Panel general por finalidad productiva</p>
       </div>
 
+      {/* Acciones rápidas */}
+      <div className="bg-white rounded-lg shadow p-4 mb-6 flex flex-wrap gap-3">
+        <a href="/nuevo-evento?tipo=Ordeño" className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition">🥛 Registrar ordeño</a>
+        <a href="/nuevo-evento?tipo=Engorde" className="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700 transition">📈 Registrar engorde</a>
+      </div>
+
       {loading ? (
         <div className="bg-white rounded-lg shadow p-6 text-center">Cargando métricas...</div>
       ) : (

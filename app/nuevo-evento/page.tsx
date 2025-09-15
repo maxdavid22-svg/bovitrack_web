@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 type Bovino = {
@@ -21,6 +21,7 @@ type EventoForm = {
 
 export default function NuevoEventoPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [bovinos, setBovinos] = useState<Bovino[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,6 +47,10 @@ export default function NuevoEventoPage() {
 
   useEffect(() => {
     cargarBovinos();
+    const preTipo = searchParams.get('tipo');
+    if (preTipo) {
+      setForm(prev => ({ ...prev, tipo: preTipo }));
+    }
   }, []);
 
   const cargarBovinos = async () => {
