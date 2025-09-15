@@ -369,14 +369,18 @@ function MiniBars({ data, color, unit }: { data: Array<{ fecha: string; total: n
     );
   }
 
+  // Debug: mostrar algunos valores
+  const sampleData = data.filter(d => d.total > 0).slice(0, 5);
+  console.log('MiniBars Debug:', { max, sampleData, color });
+
   return (
     <div>
       <div className="flex items-end gap-1 h-32 overflow-x-auto pb-2">
         {data.map((d, i) => {
-          // Altura proporcional real, con mínimo de 2px para que se vea algo
-          const height = d.total > 0 ? Math.max(2, (d.total / max) * 100) : 0;
+          // Altura proporcional real SIN mínimo
+          const height = d.total > 0 ? (d.total / max) * 100 : 0;
           return (
-            <div key={i} className="flex flex-col items-center min-w-0" title={`${d.fecha}: ${d.total} ${unit}`}>
+            <div key={i} className="flex flex-col items-center min-w-0" title={`${d.fecha}: ${d.total} ${unit} (${height.toFixed(1)}%)`}>
               <div
                 className={`w-4 rounded-t`}
                 style={{ height: `${height}%`, backgroundColor: barColor, border: `1px solid ${barColor}`, filter: 'none' }}
