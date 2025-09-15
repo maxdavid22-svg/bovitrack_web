@@ -444,6 +444,15 @@ function MiniBarsSVG({ data, color, unit }: { data: Array<{ fecha: string; total
   const dataWithValues = data.filter(d => d.total > 0);
   const max = dataWithValues.length > 0 ? Math.max(...dataWithValues.map(d => d.total)) : 1;
   
+  // Debug temporal
+  console.log('MiniBarsSVG Debug:', {
+    color,
+    totalDays: data.length,
+    daysWithData: dataWithValues.length,
+    max,
+    topValues: dataWithValues.sort((a, b) => b.total - a.total).slice(0, 5)
+  });
+  
   const barGap = 4;
   const barW = Math.max(2, Math.floor(innerW / data.length) - barGap);
 
