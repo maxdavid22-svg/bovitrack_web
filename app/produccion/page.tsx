@@ -255,14 +255,14 @@ export default function ProduccionPage() {
               <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: '#3B82F6' }}></span>
               Tendencia Ordeño (litros/día)
             </h3>
-            <MiniBars data={serieLitrosDia} color="bg-blue-500" unit="L" />
+            <MiniBarsSVG data={serieLitrosDia} color="#3B82F6" unit="L" />
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }}></span>
               Tendencia Engorde (kg/día)
             </h3>
-            <MiniBars data={serieEngordeDia} color="bg-orange-500" unit="kg" />
+            <MiniBarsSVG data={serieEngordeDia} color="#F59E0B" unit="kg" />
           </div>
         </div>
       )}
@@ -427,6 +427,58 @@ function MiniBars({ data, color, unit }: { data: Array<{ fecha: string; total: n
       <div className="mt-2 text-xs text-gray-500 text-center">
         Últimos 30 días (máx: {max} {unit})
       </div>
+    </div>
+  );
+}
+
+function MiniBarsSVG({ data, color, unit }: { data: Array<{ fecha: string; total: number }>; color: string; unit: string }) {
+  const width = 360; // px visibles
+  const height = 140; // px de alto util
+  const padding = { top: 10, right: 10, bottom: 20, left: 24 };
+  const innerW = width - padding.left - padding.right;
+  const innerH = height - padding.top - padding.bottom;
+  const max = Math.max(1, ...data.map(d => d.total));
+  const barGap = 4;
+  const barW = Math.max(2, Math.floor(innerW / data.length) - barGap);
+
+  const y = (v: number) => padding.top + innerH - (v / max) * innerH;
+
+  return (
+    <div className="overflow-x-auto">
+      <svg width={width} height={height} className="min-w-full">
+        {/* Guías */}
+        <line x1={padding.left} y1={padding.top} x2={padding.left + innerW} y2={padding.top} stroke="#E5E7EB" strokeWidth={1} />
+        <line x1={padding.left} y1={padding.top + innerH / 2} x2={padding.left + innerW} y2={padding.top + innerH / 2} stroke="#E5E7EB" strokeWidth={1} />
+        <line x1={padding.left} y1={padding.top + innerH} x2={padding.left + innerW} y2={padding.top + innerH} stroke="#E5E7EB" strokeWidth={1} />
+
+        {/* Barras */}
+        {data.map((d, i) => {
+          const x = padding.left + i * (barW + barGap);
+          const h = (d.total / max) * innerH;
+          return (
+            <g key={i}>
+              <rect x={x} y={padding.top + innerH - h} width={barW} height={h} fill={color} rx={2} />
+              {h > 0.55 * innerH && i % 4 === 0 && (
+                <text x={x + barW / 2} y={padding.top + innerH - h - 4} textAnchor="middle" fontSize="10" fill="#374151">
+                  {d.total.toFixed(1)}
+                </text>
+              )}
+            </g>
+          );
+        })}
+
+        {/* Fechas */}
+        {data.map((d, i) => {
+          const x = padding.left + i * (barW + barGap);
+          if (i % 5 !== 0 && i !== data.length - 1) return null;
+          return (
+            <text key={`lbl-${i}`} x={x + barW / 2} y={height - 4} textAnchor="middle" fontSize="10" fill="#6B7280">
+              {d.fecha.slice(5)}
+            </text>
+          );
+        })}
+      </svg>
+      <div className="mt-2 text-xs text-gray-500 text-center">Últimos 30 días (máx: {max} {unit})</div>
     </div>
   );
 }
