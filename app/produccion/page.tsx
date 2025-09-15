@@ -377,12 +377,12 @@ function MiniBars({ data, color, unit }: { data: Array<{ fecha: string; total: n
   const sampleData = data.filter(d => d.total > 0).slice(0, 5);
   const allValues = data.filter(d => d.total > 0).map(d => d.total);
   console.log('MiniBars Debug:', { 
-    max, 
+    maxValue: max, 
     color,
     sampleData: sampleData.map(d => ({ fecha: d.fecha, total: d.total, percentage: ((d.total / max) * 100).toFixed(1) + '%' })),
     allValues: allValues.slice(0, 10),
-    min: Math.min(...allValues),
-    max: Math.max(...allValues)
+    minValue: Math.min(...allValues),
+    maxValueActual: Math.max(...allValues)
   });
 
   return (
