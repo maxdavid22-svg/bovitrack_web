@@ -17,6 +17,7 @@ export default function Nuevo() {
   const [raza, setRaza] = useState('');
   const [sexo, setSexo] = useState<'Macho' | 'Hembra' | ''>('');
   const [estado, setEstado] = useState<'Activo' | 'Vendido' | 'Sacrificado' | 'Muerto' | ''>('Activo');
+  const [finalidadProductiva, setFinalidadProductiva] = useState<'Carne' | 'Leche' | 'Doble propósito' | 'Engorde' | 'Reproducción' | 'Desconocido' | ''>('');
   const [fechaNacimiento, setFechaNacimiento] = useState('');
   const [pesoNacimiento, setPesoNacimiento] = useState('');
   const [pesoActual, setPesoActual] = useState('');
@@ -80,6 +81,7 @@ export default function Nuevo() {
         ubicacion_actual: ubicacionActual || null,
         coordenadas: coordenadas || null,
         observaciones: observaciones || null,
+        finalidad_productiva: finalidadProductiva || null,
       };
       
       const { error } = await supabase.from('bovinos').insert([payload]);
@@ -201,6 +203,23 @@ export default function Nuevo() {
                   <option value="Vendido">Vendido</option>
                   <option value="Sacrificado">Sacrificado</option>
                   <option value="Muerto">Muerto</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Finalidad Productiva</label>
+                <select 
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  value={finalidadProductiva} 
+                  onChange={e => setFinalidadProductiva(e.target.value as any)}
+                >
+                  <option value="">Seleccionar finalidad</option>
+                  <option value="Carne">🥩 Carne</option>
+                  <option value="Leche">🥛 Leche</option>
+                  <option value="Doble propósito">🔄 Doble propósito</option>
+                  <option value="Engorde">📈 Engorde</option>
+                  <option value="Reproducción">👶 Reproducción</option>
+                  <option value="Desconocido">❓ Desconocido</option>
                 </select>
               </div>
               
