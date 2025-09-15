@@ -95,7 +95,13 @@ export default function ProduccionPage() {
           d.setDate(hoy.getDate() - i);
           dias.push(yyyyMmDd(d));
         }
-        const litrosPorDia = dias.map(fecha => ({ fecha, total: sum(ordenos.filter(o => o.fecha === fecha)) }));
+        const litrosPorDia = dias.map(fecha => {
+          const eventosDelDia = ordenos.filter(o => o.fecha === fecha);
+          const totalLitros = eventosDelDia.reduce((acc, evento) => acc + (evento.litros || 0), 0);
+          return { fecha, total: totalLitros };
+        });
+        console.log('Ordenos:', ordenos);
+        console.log('Litros por día:', litrosPorDia);
         setSerieLitrosDia(litrosPorDia);
 
         // Cargar eventos de Engorde últimos 30 días
