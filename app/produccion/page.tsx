@@ -471,10 +471,13 @@ function MiniBarsSVG({ data, color, unit }: { data: Array<{ fecha: string; total
         {data.map((d, i) => {
           const x = padding.left + i * (barW + barGap);
           const h = (d.total / max) * innerH;
+          const isMaxValue = d.total === max;
+          const shouldShowValue = isMaxValue || (h > 0.3 * innerH && i % 3 === 0);
+          
           return (
             <g key={i}>
               <rect x={x} y={padding.top + innerH - h} width={barW} height={h} fill={color} rx={2} />
-              {h > 0.3 * innerH && i % 3 === 0 && (
+              {shouldShowValue && (
                 <text x={x + barW / 2} y={padding.top + innerH - h - 4} textAnchor="middle" fontSize="10" fill="#374151">
                   {d.total.toFixed(1)}
                 </text>
