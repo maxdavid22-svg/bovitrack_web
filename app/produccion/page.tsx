@@ -247,11 +247,17 @@ export default function ProduccionPage() {
       {!loading && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-semibold mb-4">Tendencia Ordeño (litros/día)</h3>
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: '#3B82F6' }}></span>
+              Tendencia Ordeño (litros/día)
+            </h3>
             <MiniBars data={serieLitrosDia} color="bg-blue-500" unit="L" />
           </div>
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-semibold mb-4">Tendencia Engorde (eventos/día)</h3>
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }}></span>
+              Tendencia Engorde (eventos/día)
+            </h3>
             <MiniBars data={serieEngordeDia} color="bg-orange-500" unit="ev" />
           </div>
         </div>
@@ -371,8 +377,8 @@ function MiniBars({ data, color, unit }: { data: Array<{ fecha: string; total: n
           return (
             <div key={i} className="flex flex-col items-center min-w-0" title={`${d.fecha}: ${d.total} ${unit}`}>
               <div
-                className={`w-4 rounded-t shadow-sm`}
-                style={{ height: `${height}%`, backgroundColor: barColor }}
+                className={`w-4 rounded-t`}
+                style={{ height: `${height}%`, backgroundColor: barColor, border: `1px solid ${barColor}`, filter: 'none' }}
               ></div>
               {d.total > 0 && (
                 <div className="text-xs text-gray-600 mt-1 font-mono">
