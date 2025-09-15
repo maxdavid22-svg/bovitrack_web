@@ -387,29 +387,37 @@ function MiniBars({ data, color, unit }: { data: Array<{ fecha: string; total: n
 
   return (
     <div>
-      <div className="relative h-32">
+      <div className="relative h-40">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-0 right-0 border-t border-gray-200"></div>
           <div className="absolute top-1/2 left-0 right-0 border-t border-gray-200"></div>
           <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200"></div>
         </div>
-        <div className="absolute inset-0 flex items-end gap-1 overflow-x-auto pb-2">
+        <div className="absolute inset-0 flex items-end gap-2 overflow-x-auto pb-6">
           {data.map((d, i) => {
             const height = d.total > 0 ? (d.total / max) * 100 : 0;
             return (
               <div key={i} className="flex flex-col items-center min-w-0" title={`${d.fecha}: ${d.total} ${unit} (${height.toFixed(1)}%)`}>
                 <div
-                  className={`w-4 rounded-t`}
+                  className={`w-3 rounded-t`}
                   style={{ height: `${height}%`, backgroundColor: barColor, border: `1px solid ${barColor}`, filter: 'none' }}
                 ></div>
-                {d.total > 0 && (
-                  <div className="text-xs text-gray-600 mt-1 font-mono">
+                {d.total > 0 && height >= 50 && i % 3 === 0 && (
+                  <div className="text-[10px] leading-none text-gray-600 mt-1 font-mono whitespace-nowrap">
                     {d.total.toFixed(1)}
                   </div>
                 )}
               </div>
             );
           })}
+        </div>
+        {/* Etiquetas de fecha cada 5 días */}
+        <div className="absolute bottom-0 left-0 right-0 flex items-end gap-2 overflow-x-auto pb-1">
+          {data.map((d, i) => (
+            <div key={`lbl-${i}`} className="w-3 text-[10px] text-gray-500 text-center font-mono">
+              {(i % 5 === 0 || i === data.length - 1) ? d.fecha.slice(5) : ''}
+            </div>
+          ))}
         </div>
       </div>
       <div className="mt-2 text-xs text-gray-500 text-center">
