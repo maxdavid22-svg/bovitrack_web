@@ -436,7 +436,7 @@ function MiniBars({ data, color, unit }: { data: Array<{ fecha: string; total: n
 function MiniBarsSVG({ data, color, unit }: { data: Array<{ fecha: string; total: number }>; color: string; unit: string }) {
   const width = 360; // px visibles
   const height = 140; // px de alto util
-  const padding = { top: 10, right: 10, bottom: 20, left: 24 };
+  const padding = { top: 20, right: 10, bottom: 20, left: 24 }; // Aumenté top de 10 a 20
   const innerW = width - padding.left - padding.right;
   const innerH = height - padding.top - padding.bottom;
   
@@ -478,7 +478,7 @@ function MiniBarsSVG({ data, color, unit }: { data: Array<{ fecha: string; total
             <g key={i}>
               <rect x={x} y={padding.top + innerH - h} width={barW} height={h} fill={color} rx={2} />
               {shouldShowValue && (
-                <text x={x + barW / 2} y={padding.top + innerH - h - 4} textAnchor="middle" fontSize="10" fill="#374151">
+                <text x={x + barW / 2} y={padding.top + innerH - h - 6} textAnchor="middle" fontSize="10" fill="#374151">
                   {d.total.toFixed(1)}
                 </text>
               )}
