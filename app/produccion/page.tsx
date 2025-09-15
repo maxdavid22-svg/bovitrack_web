@@ -37,6 +37,11 @@ export default function ProduccionPage() {
   const [promGmd30d, setPromGmd30d] = useState(0);
   const [serieLitrosDia, setSerieLitrosDia] = useState<Array<{ fecha: string; total: number }>>([]);
   const [serieEngordeDia, setSerieEngordeDia] = useState<Array<{ fecha: string; total: number }>>([]);
+  const [mostrarDetalles, setMostrarDetalles] = useState({
+    bovinosLeche: false,
+    bovinosCarne: false,
+    ultimosOrdenos: false
+  });
 
   useEffect(() => {
     (async () => {
@@ -153,6 +158,42 @@ export default function ProduccionPage() {
         <a href="/nuevo-evento?tipo=Engorde" className="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700 transition">📈 Registrar engorde</a>
       </div>
 
+      {/* Filtros para mostrar detalles */}
+      {!loading && (
+        <div className="bg-white rounded-lg shadow p-4 mb-6">
+          <h3 className="font-semibold mb-3">🔍 Mostrar detalles adicionales:</h3>
+          <div className="flex flex-wrap gap-4">
+            <label className="flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                checked={mostrarDetalles.bovinosLeche}
+                onChange={(e) => setMostrarDetalles({...mostrarDetalles, bovinosLeche: e.target.checked})}
+                className="rounded"
+              />
+              <span>🥛 Bovinos de Leche</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                checked={mostrarDetalles.bovinosCarne}
+                onChange={(e) => setMostrarDetalles({...mostrarDetalles, bovinosCarne: e.target.checked})}
+                className="rounded"
+              />
+              <span>🥩 Bovinos de Carne</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                checked={mostrarDetalles.ultimosOrdenos}
+                onChange={(e) => setMostrarDetalles({...mostrarDetalles, ultimosOrdenos: e.target.checked})}
+                className="rounded"
+              />
+              <span>📋 Últimos Ordeños</span>
+            </label>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="bg-white rounded-lg shadow p-6 text-center">Cargando métricas...</div>
       ) : (
@@ -165,6 +206,7 @@ export default function ProduccionPage() {
             <div key={s.label} className="bg-white rounded-lg shadow p-4 flex flex-col items-center">
               <div className={`text-xs px-2 py-1 rounded-full ${s.color}`}>{s.emoji} {s.label}</div>
               <div className="text-2xl font-bold mt-2">{s.valor}</div>
+              <div className="text-xs text-gray-500">{kpis.total > 0 ? ((s.valor / kpis.total) * 100).toFixed(1) : 0}%</div>
             </div>
           ))}
         </div>
@@ -210,42 +252,7 @@ export default function ProduccionPage() {
         </div>
       )}
 
-      {/* Barra apilada simple (sin librerías) */}
-      {!loading && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">Distribución por finalidad</h2>
-          <div className="space-y-3">
-            {series.map(s => {
-              const pct = kpis.total ? Math.round((s.valor / kpis.total) * 100) : 0;
-              return (
-                <div key={s.label} className="">
-                  <div className="flex justify-between text-sm text-gray-700 mb-1">
-                    <span>{s.emoji} {s.label}</span>
-                    <span>{s.valor} ({pct}%)</span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded h-2 overflow-hidden">
-                    <div className="h-2 bg-green-500" style={{ width: `${pct}%` }}></div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
-      {/* Listados rápidos */}
-      {!loading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-semibold mb-3">Bovinos de Leche (recientes)</h3>
-            <ListaBovinosCorta finalidad="Leche" />
-          </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-semibold mb-3">Bovinos de Carne (recientes)</h3>
-            <ListaBovinosCorta finalidad="Carne" />
-          </div>
-        </div>
-      )}
 
       {/* Gráficas simples últimos 30 días */}
       {!loading && (
@@ -290,33 +297,54 @@ export default function ProduccionPage() {
         </div>
       )}
 
-      {/* Últimos ordeños (verificación rápida) */}
+      {/* Secciones detalladas (condicionales) */}
       {!loading && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h3 className="font-semibold mb-4">Últimos Ordeños (30 días)</h3>
-          {ordenhoUltimos30.length === 0 ? (
-            <div className="text-sm text-gray-500">No hay eventos de Ordeño en los últimos 30 días.</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left">
-                  <tr>
-                    <th className="p-3 font-medium">Fecha</th>
-                    <th className="p-3 font-medium">Litros</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ordenhoUltimos30.slice(-10).reverse().map((ev, idx) => (
-                    <tr key={idx} className="border-t">
-                      <td className="p-3">{ev.fecha}</td>
-                      <td className="p-3">{typeof ev.litros === 'number' ? ev.litros.toFixed(1) : ev.litros}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <>
+          {/* Bovinos de Leche */}
+          {mostrarDetalles.bovinosLeche && (
+            <div className="bg-white rounded-lg shadow p-6 mb-6">
+              <h3 className="font-semibold mb-3">🥛 Bovinos de Leche (recientes)</h3>
+              <ListaBovinosCorta finalidad="Leche" />
             </div>
           )}
-        </div>
+
+          {/* Bovinos de Carne */}
+          {mostrarDetalles.bovinosCarne && (
+            <div className="bg-white rounded-lg shadow p-6 mb-6">
+              <h3 className="font-semibold mb-3">🥩 Bovinos de Carne (recientes)</h3>
+              <ListaBovinosCorta finalidad="Carne" />
+            </div>
+          )}
+
+          {/* Últimos ordeños */}
+          {mostrarDetalles.ultimosOrdenos && (
+            <div className="bg-white rounded-lg shadow p-6 mb-6">
+              <h3 className="font-semibold mb-4">📋 Últimos Ordeños (30 días)</h3>
+              {ordenhoUltimos30.length === 0 ? (
+                <div className="text-sm text-gray-500">No hay eventos de Ordeño en los últimos 30 días.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 text-left">
+                      <tr>
+                        <th className="p-3 font-medium">Fecha</th>
+                        <th className="p-3 font-medium">Litros</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ordenhoUltimos30.slice(-10).reverse().map((ev, idx) => (
+                        <tr key={idx} className="border-t">
+                          <td className="p-3">{ev.fecha}</td>
+                          <td className="p-3">{typeof ev.litros === 'number' ? ev.litros.toFixed(1) : ev.litros}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       <div className="bg-white rounded-lg shadow p-6">
