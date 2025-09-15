@@ -14,9 +14,18 @@ type KPIs = {
 
 type Serie = { label: string; valor: number; emoji: string; color: string };
 
+type EventoOrdeno = {
+  fecha: string;
+  litros: number | null;
+};
+
 export default function ProduccionPage() {
   const [kpis, setKpis] = useState<KPIs>({ total: 0, carne: 0, leche: 0, dobleProposito: 0, engorde: 0, reproduccion: 0, desconocido: 0 });
   const [loading, setLoading] = useState(true);
+  const [ordenhoUltimos30, setOrdenhoUltimos30] = useState<EventoOrdeno[]>([]);
+  const [litrosHoy, setLitrosHoy] = useState(0);
+  const [litros7d, setLitros7d] = useState(0);
+  const [litros30d, setLitros30d] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -38,6 +47,35 @@ export default function ProduccionPage() {
           desconocido: count('Desconocido') + (data?.filter(b => !b.finalidad_productiva).length || 0)
         };
         setKpis(k);
+
+        // Cargar eventos de ordeño últimos 30 días
+        const hoy = new Date();
+        const hace30 = new Date(hoy);
+        hace30.setDate(hoy.getDate() - 30);
+        const desde = hace30.toISOString().split('T')[0];
+
+        const { data: evs, error: evErr } = await supabase
+          .from('eventos')
+          .select('fecha, litros, tipo')
+          .gte('fecha', desde)
+          .eq('tipo', 'Ordeño')
+          .order('fecha', { ascending: true });
+        if (evErr) throw evErr;
+
+        const ordenos: EventoOrdeno[] = (evs || []).map((e: any) => ({ fecha: e.fecha, litros: e.litros ?? 0 }));
+        setOrdenhoUltimos30(ordenos);
+
+        // Agregados
+        const yyyyMmDd = (d: Date) => d.toISOString().split('T')[0];
+        const hoyStr = yyyyMmDd(hoy);
+        const hace7 = new Date(hoy);
+        hace7.setDate(hoy.getDate() - 7);
+        const desde7 = yyyyMmDd(hace7);
+
+        const sum = (arr: EventoOrdeno[]) => arr.reduce((acc, it) => acc + (it.litros || 0), 0);
+        setLitros30d(sum(ordenos));
+        setLitros7d(sum(ordenos.filter(o => o.fecha >= desde7)));
+        setLitrosHoy(sum(ordenos.filter(o => o.fecha === hoyStr)));
       } catch (e) {
         console.error('Error cargando KPIs de producción', e);
       } finally {
@@ -82,6 +120,28 @@ export default function ProduccionPage() {
               <div className="text-2xl font-bold mt-2">{s.valor}</div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* KPIs de Ordeño */}
+      {!loading && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-gray-500">🥛 Litros hoy</div>
+            <div className="text-2xl font-bold">{litrosHoy.toFixed(1)}</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-gray-500">🥛 Últimos 7 días</div>
+            <div className="text-2xl font-bold">{litros7d.toFixed(1)}</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-gray-500">🥛 Últimos 30 días</div>
+            <div className="text-2xl font-bold">{litros30d.toFixed(1)}</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-gray-500">Eventos de ordeño (30d)</div>
+            <div className="text-2xl font-bold">{ordenhoUltimos30.length}</div>
+          </div>
         </div>
       )}
 
