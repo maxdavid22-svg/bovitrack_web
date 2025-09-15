@@ -49,7 +49,10 @@ type EventoInput = {
   dosis?: string | null;
   veterinario?: string | null;
   observaciones?: string | null;
+  litros?: number | null;
+  turno?: string | null;
   peso_kg?: number | null;
+  gmd?: number | null;
   costo?: number | null;
   ubicacion?: string | null;
   hora?: string | null;
