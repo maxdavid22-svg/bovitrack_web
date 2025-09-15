@@ -182,6 +182,16 @@ export async function POST(req: NextRequest) {
             comprador: ev.comprador ?? null,
             destino: ev.destino ?? null,
           };
+
+          // Campos producción (ordeño/engorde)
+          if (ev.tipo === 'Ordeño') {
+            row.litros = ev.litros ?? null;
+            row.turno = ev.turno ?? null;
+          }
+          if (ev.tipo === 'Engorde') {
+            row.peso_kg = ev.peso_kg ?? row.peso_kg ?? null;
+            row.gmd = ev.gmd ?? null;
+          }
           
           // Debug: Log para verificar campos adicionales
           if (ev.medicamento || ev.dosis || ev.veterinario || ev.comprador || ev.destino) {

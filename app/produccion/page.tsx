@@ -19,6 +19,12 @@ type EventoOrdeno = {
   litros: number | null;
 };
 
+type EventoEngorde = {
+  fecha: string;
+  peso_kg: number | null;
+  gmd: number | null;
+};
+
 export default function ProduccionPage() {
   const [kpis, setKpis] = useState<KPIs>({ total: 0, carne: 0, leche: 0, dobleProposito: 0, engorde: 0, reproduccion: 0, desconocido: 0 });
   const [loading, setLoading] = useState(true);
@@ -26,6 +32,9 @@ export default function ProduccionPage() {
   const [litrosHoy, setLitrosHoy] = useState(0);
   const [litros7d, setLitros7d] = useState(0);
   const [litros30d, setLitros30d] = useState(0);
+  const [engordeUltimos30, setEngordeUltimos30] = useState<EventoEngorde[]>([]);
+  const [promPeso30d, setPromPeso30d] = useState(0);
+  const [promGmd30d, setPromGmd30d] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -76,6 +85,20 @@ export default function ProduccionPage() {
         setLitros30d(sum(ordenos));
         setLitros7d(sum(ordenos.filter(o => o.fecha >= desde7)));
         setLitrosHoy(sum(ordenos.filter(o => o.fecha === hoyStr)));
+
+        // Cargar eventos de Engorde últimos 30 días
+        const { data: evsEng, error: evEngErr } = await supabase
+          .from('eventos')
+          .select('fecha, peso_kg, gmd, tipo')
+          .gte('fecha', desde)
+          .eq('tipo', 'Engorde')
+          .order('fecha', { ascending: true });
+        if (evEngErr) throw evEngErr;
+        const eng: EventoEngorde[] = (evsEng || []).map((e: any) => ({ fecha: e.fecha, peso_kg: e.peso_kg ?? null, gmd: e.gmd ?? null }));
+        setEngordeUltimos30(eng);
+        const avg = (arr: number[]) => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
+        setPromPeso30d(avg(eng.filter(e=>typeof e.peso_kg==='number').map(e=>e.peso_kg as number)));
+        setPromGmd30d(avg(eng.filter(e=>typeof e.gmd==='number').map(e=>e.gmd as number)));
       } catch (e) {
         console.error('Error cargando KPIs de producción', e);
       } finally {
@@ -141,6 +164,24 @@ export default function ProduccionPage() {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-sm text-gray-500">Eventos de ordeño (30d)</div>
             <div className="text-2xl font-bold">{ordenhoUltimos30.length}</div>
+          </div>
+        </div>
+      )}
+
+      {/* KPIs de Engorde */}
+      {!loading && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-gray-500">📈 Eventos de Engorde (30d)</div>
+            <div className="text-2xl font-bold">{engordeUltimos30.length}</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-gray-500">⚖️ Peso promedio (30d)</div>
+            <div className="text-2xl font-bold">{promPeso30d.toFixed(1)} kg</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-gray-500">📊 GMD promedio (30d)</div>
+            <div className="text-2xl font-bold">{promGmd30d.toFixed(2)} kg/día</div>
           </div>
         </div>
       )}
