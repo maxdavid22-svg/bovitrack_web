@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 type Bovino = {
@@ -21,7 +21,7 @@ type EventoForm = {
 
 export default function NuevoEventoPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  // Nota: evitamos useSearchParams para no requerir Suspense en build
   const [bovinos, setBovinos] = useState<Bovino[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -47,9 +47,12 @@ export default function NuevoEventoPage() {
 
   useEffect(() => {
     cargarBovinos();
-    const preTipo = searchParams.get('tipo');
-    if (preTipo) {
-      setForm(prev => ({ ...prev, tipo: preTipo }));
+    if (typeof window !== 'undefined') {
+      const usp = new URLSearchParams(window.location.search);
+      const preTipo = usp.get('tipo');
+      if (preTipo) {
+        setForm(prev => ({ ...prev, tipo: preTipo }));
+      }
     }
   }, []);
 
