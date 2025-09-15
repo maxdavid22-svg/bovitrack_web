@@ -45,6 +45,10 @@ export default function ProduccionPage() {
   const [alertas, setAlertas] = useState<any[]>([]);
   const [alertasLoading, setAlertasLoading] = useState(true);
   const [mostrarAlertas, setMostrarAlertas] = useState(false);
+  const [filtrosAlertas, setFiltrosAlertas] = useState({
+    nivelRiesgo: '',
+    tipoAlerta: ''
+  });
 
   useEffect(() => {
     (async () => {
@@ -177,6 +181,16 @@ export default function ProduccionPage() {
     { label: 'Desconocido', valor: kpis.desconocido, emoji: '❓', color: 'bg-gray-100 text-gray-800' },
   ];
 
+  // Filtrar alertas basado en los filtros seleccionados
+  const alertasFiltradas = alertas.filter(alerta => {
+    const tipoAlerta = Array.isArray(alerta.tipos_alertas) ? alerta.tipos_alertas[0] : alerta.tipos_alertas;
+    
+    const cumpleNivelRiesgo = !filtrosAlertas.nivelRiesgo || alerta.nivel_riesgo === filtrosAlertas.nivelRiesgo;
+    const cumpleTipoAlerta = !filtrosAlertas.tipoAlerta || tipoAlerta?.codigo === filtrosAlertas.tipoAlerta;
+    
+    return cumpleNivelRiesgo && cumpleTipoAlerta;
+  });
+
   return (
     <main className="max-w-6xl mx-auto">
       <div className="bg-gradient-to-r from-green-600 to-green-800 text-white rounded-lg p-6 mb-6">
@@ -262,15 +276,111 @@ export default function ProduccionPage() {
             </div>
             
             <div className="p-4">
+              {/* Resumen de Alertas */}
+              <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-semibold text-red-800">Resumen por nivel de riesgo:</span>
+                  <div className="flex gap-3">
+                    <span className="text-red-600">🔴 Crítico: {alertas.filter(a => a.nivel_riesgo === 'Crítico').length}</span>
+                    <span className="text-orange-600">🟠 Alto: {alertas.filter(a => a.nivel_riesgo === 'Alto').length}</span>
+                    <span className="text-yellow-600">🟡 Medio: {alertas.filter(a => a.nivel_riesgo === 'Medio').length}</span>
+                    <span className="text-blue-600">🔵 Bajo: {alertas.filter(a => a.nivel_riesgo === 'Bajo').length}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Filtros de Alertas */}
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2">🔍 Filtrar alertas:</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Nivel de Riesgo</label>
+                    <select
+                      value={filtrosAlertas.nivelRiesgo}
+                      onChange={(e) => setFiltrosAlertas({...filtrosAlertas, nivelRiesgo: e.target.value})}
+                      className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    >
+                      <option value="">Todos los niveles</option>
+                      <option value="Crítico">🔴 Crítico</option>
+                      <option value="Alto">🟠 Alto</option>
+                      <option value="Medio">🟡 Medio</option>
+                      <option value="Bajo">🔵 Bajo</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de Alerta</label>
+                    <select
+                      value={filtrosAlertas.tipoAlerta}
+                      onChange={(e) => setFiltrosAlertas({...filtrosAlertas, tipoAlerta: e.target.value})}
+                      className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    >
+                      <option value="">Todos los tipos</option>
+                      <option value="VAC_VENCIDA">Vacunación Vencida</option>
+                      <option value="VAC_POR_VENCER">Vacunación por Vencer</option>
+                      <option value="RETIRO_SANITARIO">Retiro Sanitario</option>
+                      <option value="TRATAMIENTO_VENCIDO">Tratamiento Vencido</option>
+                      <option value="CUARENTENA">Cuarentena</option>
+                      <option value="ENFERMEDAD_DETECTADA">Enfermedad Detectada</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    <span className="text-xs font-medium text-gray-600">Filtros rápidos:</span>
+                    <button
+                      onClick={() => setFiltrosAlertas({nivelRiesgo: 'Crítico', tipoAlerta: ''})}
+                      className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded hover:bg-red-200 transition"
+                    >
+                      🔴 Solo Críticas
+                    </button>
+                    <button
+                      onClick={() => setFiltrosAlertas({nivelRiesgo: 'Alto', tipoAlerta: ''})}
+                      className="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded hover:bg-orange-200 transition"
+                    >
+                      🟠 Solo Altas
+                    </button>
+                    <button
+                      onClick={() => setFiltrosAlertas({nivelRiesgo: '', tipoAlerta: 'VAC_VENCIDA'})}
+                      className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200 transition"
+                    >
+                      💉 Vacunas Vencidas
+                    </button>
+                    <button
+                      onClick={() => setFiltrosAlertas({nivelRiesgo: '', tipoAlerta: 'RETIRO_SANITARIO'})}
+                      className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded hover:bg-red-200 transition"
+                    >
+                      🚫 Retiros
+                    </button>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-500">
+                      Mostrando {alertasFiltradas.length} de {alertas.length} alertas
+                    </span>
+                    <button
+                      onClick={() => setFiltrosAlertas({nivelRiesgo: '', tipoAlerta: ''})}
+                      className="text-xs text-red-600 hover:text-red-800 underline"
+                    >
+                      Limpiar filtros
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               {alertas.length === 0 ? (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
                   <div className="text-green-600 text-4xl mb-2">✅</div>
                   <h3 className="text-lg font-semibold text-green-800 mb-1">Sin alertas activas</h3>
                   <p className="text-green-600">Todos los bovinos están en condiciones óptimas de inocuidad</p>
                 </div>
+              ) : alertasFiltradas.length === 0 ? (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+                  <div className="text-yellow-600 text-4xl mb-2">🔍</div>
+                  <h3 className="text-lg font-semibold text-yellow-800 mb-1">Sin alertas con estos filtros</h3>
+                  <p className="text-yellow-600">Intenta ajustar los filtros para ver más alertas</p>
+                </div>
               ) : (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {alertas.map((alerta) => {
+                  {alertasFiltradas.map((alerta) => {
                     const bovino = Array.isArray(alerta.bovinos) ? alerta.bovinos[0] : alerta.bovinos;
                     const tipoAlerta = Array.isArray(alerta.tipos_alertas) ? alerta.tipos_alertas[0] : alerta.tipos_alertas;
                     
