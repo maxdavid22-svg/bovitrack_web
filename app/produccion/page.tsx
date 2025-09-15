@@ -116,8 +116,12 @@ export default function ProduccionPage() {
         setPromPeso30d(avg(eng.filter(e=>typeof e.peso_kg==='number').map(e=>e.peso_kg as number)));
         setPromGmd30d(avg(eng.filter(e=>typeof e.gmd==='number').map(e=>e.gmd as number)));
 
-        // Serie diaria (conteo de engorde por día)
-        const engPorDia = dias.map(fecha => ({ fecha, total: eng.filter(o => o.fecha === fecha).length }));
+        // Serie diaria (suma de pesos de engorde por día)
+        const engPorDia = dias.map(fecha => {
+          const eventosDelDia = eng.filter(o => o.fecha === fecha);
+          const totalPeso = eventosDelDia.reduce((acc, evento) => acc + (evento.peso_kg || 0), 0);
+          return { fecha, total: totalPeso };
+        });
         setSerieEngordeDia(engPorDia);
       } catch (e) {
         console.error('Error cargando KPIs de producción', e);
@@ -256,9 +260,9 @@ export default function ProduccionPage() {
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }}></span>
-              Tendencia Engorde (eventos/día)
+              Tendencia Engorde (kg/día)
             </h3>
-            <MiniBars data={serieEngordeDia} color="bg-orange-500" unit="ev" />
+            <MiniBars data={serieEngordeDia} color="bg-orange-500" unit="kg" />
           </div>
         </div>
       )}
