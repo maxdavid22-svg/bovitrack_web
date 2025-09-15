@@ -35,6 +35,8 @@ export default function ProduccionPage() {
   const [engordeUltimos30, setEngordeUltimos30] = useState<EventoEngorde[]>([]);
   const [promPeso30d, setPromPeso30d] = useState(0);
   const [promGmd30d, setPromGmd30d] = useState(0);
+  const [serieLitrosDia, setSerieLitrosDia] = useState<Array<{ fecha: string; total: number }>>([]);
+  const [serieEngordeDia, setSerieEngordeDia] = useState<Array<{ fecha: string; total: number }>>([]);
 
   useEffect(() => {
     (async () => {
@@ -86,6 +88,16 @@ export default function ProduccionPage() {
         setLitros7d(sum(ordenos.filter(o => o.fecha >= desde7)));
         setLitrosHoy(sum(ordenos.filter(o => o.fecha === hoyStr)));
 
+        // Serie diaria (litros por día últimos 30)
+        const dias: string[] = [];
+        for (let i = 29; i >= 0; i--) {
+          const d = new Date(hoy);
+          d.setDate(hoy.getDate() - i);
+          dias.push(yyyyMmDd(d));
+        }
+        const litrosPorDia = dias.map(fecha => ({ fecha, total: sum(ordenos.filter(o => o.fecha === fecha)) }));
+        setSerieLitrosDia(litrosPorDia);
+
         // Cargar eventos de Engorde últimos 30 días
         const { data: evsEng, error: evEngErr } = await supabase
           .from('eventos')
@@ -99,6 +111,10 @@ export default function ProduccionPage() {
         const avg = (arr: number[]) => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
         setPromPeso30d(avg(eng.filter(e=>typeof e.peso_kg==='number').map(e=>e.peso_kg as number)));
         setPromGmd30d(avg(eng.filter(e=>typeof e.gmd==='number').map(e=>e.gmd as number)));
+
+        // Serie diaria (conteo de engorde por día)
+        const engPorDia = dias.map(fecha => ({ fecha, total: eng.filter(o => o.fecha === fecha).length }));
+        setSerieEngordeDia(engPorDia);
       } catch (e) {
         console.error('Error cargando KPIs de producción', e);
       } finally {
@@ -223,6 +239,20 @@ export default function ProduccionPage() {
         </div>
       )}
 
+      {/* Gráficas simples últimos 30 días */}
+      {!loading && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="font-semibold mb-4">Tendencia Ordeño (litros/día)</h3>
+            <MiniBars data={serieLitrosDia} color="bg-blue-500" unit="L" />
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="font-semibold mb-4">Tendencia Engorde (eventos/día)</h3>
+            <MiniBars data={serieEngordeDia} color="bg-orange-500" unit="ev" />
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold mb-4">Siguientes pasos</h2>
         <ul className="list-disc pl-6 text-gray-700 space-y-1">
@@ -274,6 +304,22 @@ function ListaBovinosCorta({ finalidad }: { finalidad: 'Carne' | 'Leche' | 'Dobl
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function MiniBars({ data, color, unit }: { data: Array<{ fecha: string; total: number }>; color: string; unit: string }) {
+  const max = Math.max(1, ...data.map(d => d.total));
+  return (
+    <div>
+      <div className="flex items-end gap-1 h-28 overflow-x-auto">
+        {data.map((d, i) => (
+          <div key={i} className="flex flex-col items-center" title={`${d.fecha}: ${d.total} ${unit}`}>
+            <div className={`${color} w-2 rounded`} style={{ height: `${(d.total / max) * 100}%` }}></div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 text-xs text-gray-500">Últimos 30 días</div>
     </div>
   );
 }
