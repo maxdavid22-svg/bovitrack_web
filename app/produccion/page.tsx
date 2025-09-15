@@ -547,7 +547,9 @@ function TopProducersLeche() {
         // Agrupar por bovino y sumar litros
         const bovinoStats = new Map();
         data?.forEach(evento => {
-          const bovino = evento.bovinos;
+          const bovino = Array.isArray(evento.bovinos) ? evento.bovinos[0] : evento.bovinos;
+          if (!bovino) return;
+          
           const key = bovino.codigo;
           
           if (!bovinoStats.has(key)) {
@@ -640,7 +642,9 @@ function TopProducersCarne() {
         // Agrupar por bovino y calcular métricas
         const bovinoStats = new Map();
         data?.forEach(evento => {
-          const bovino = evento.bovinos;
+          const bovino = Array.isArray(evento.bovinos) ? evento.bovinos[0] : evento.bovinos;
+          if (!bovino) return;
+          
           const key = bovino.codigo;
           
           if (!bovinoStats.has(key)) {
