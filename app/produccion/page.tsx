@@ -212,87 +212,90 @@ export default function ProduccionPage() {
         </div>
       )}
 
-      {/* Sección de Producción de Leche */}
+      {/* Secciones de Producción lado a lado */}
       {!loading && (
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <span className="text-2xl">🥛</span>
-            Producción de Leche
-          </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Estadísticas de Leche */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4 text-blue-700">📊 Estadísticas de Ordeño</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Litros hoy</span>
-                  <span className="text-xl font-bold text-blue-600">{litrosHoy.toFixed(1)} L</span>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Columna Izquierda - Producción de Leche */}
+            <div>
+              <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <span className="text-2xl">🥛</span>
+                Producción de Leche
+              </h2>
+              <div className="space-y-6">
+                {/* Estadísticas de Leche */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-semibold mb-4 text-blue-700">📊 Estadísticas de Ordeño</h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Litros hoy</span>
+                      <span className="text-xl font-bold text-blue-600">{litrosHoy.toFixed(1)} L</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Últimos 7 días</span>
+                      <span className="text-xl font-bold text-blue-600">{litros7d.toFixed(1)} L</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Últimos 30 días</span>
+                      <span className="text-xl font-bold text-blue-600">{litros30d.toFixed(1)} L</span>
+                    </div>
+                    <div className="flex justify-between items-center border-t pt-2">
+                      <span className="text-sm text-gray-600">Eventos (30d)</span>
+                      <span className="text-lg font-semibold text-gray-700">{ordenhoUltimos30.length}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Últimos 7 días</span>
-                  <span className="text-xl font-bold text-blue-600">{litros7d.toFixed(1)} L</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Últimos 30 días</span>
-                  <span className="text-xl font-bold text-blue-600">{litros30d.toFixed(1)} L</span>
-                </div>
-                <div className="flex justify-between items-center border-t pt-2">
-                  <span className="text-sm text-gray-600">Eventos (30d)</span>
-                  <span className="text-lg font-semibold text-gray-700">{ordenhoUltimos30.length}</span>
+
+                {/* Gráfica de Tendencia de Leche */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-semibold mb-4 text-blue-700 flex items-center gap-2">
+                    <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: '#3B82F6' }}></span>
+                    Tendencia de Ordeño (litros/día)
+                  </h3>
+                  <MiniBarsSVG data={serieLitrosDia} color="#3B82F6" unit="L" />
                 </div>
               </div>
             </div>
 
-            {/* Gráfica de Tendencia de Leche */}
-            <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4 text-blue-700 flex items-center gap-2">
-                <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: '#3B82F6' }}></span>
-                Tendencia de Ordeño (litros/día)
-              </h3>
-              <MiniBarsSVG data={serieLitrosDia} color="#3B82F6" unit="L" />
-            </div>
-          </div>
-        </div>
-      )}
+            {/* Columna Derecha - Producción de Carne */}
+            <div>
+              <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <span className="text-2xl">🥩</span>
+                Producción de Carne
+              </h2>
+              <div className="space-y-6">
+                {/* Estadísticas de Engorde */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-semibold mb-4 text-orange-700">📈 Estadísticas de Engorde</h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Eventos (30d)</span>
+                      <span className="text-xl font-bold text-orange-600">{engordeUltimos30.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Peso promedio</span>
+                      <span className="text-xl font-bold text-orange-600">{promPeso30d.toFixed(1)} kg</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">GMD promedio</span>
+                      <span className="text-xl font-bold text-orange-600">{promGmd30d.toFixed(2)} kg/día</span>
+                    </div>
+                    <div className="flex justify-between items-center border-t pt-2">
+                      <span className="text-sm text-gray-600">Total peso (30d)</span>
+                      <span className="text-lg font-semibold text-gray-700">{serieEngordeDia.reduce((acc, d) => acc + d.total, 0).toFixed(1)} kg</span>
+                    </div>
+                  </div>
+                </div>
 
-      {/* Sección de Producción de Carne */}
-      {!loading && (
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <span className="text-2xl">🥩</span>
-            Producción de Carne
-          </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Estadísticas de Engorde */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4 text-orange-700">📈 Estadísticas de Engorde</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Eventos (30d)</span>
-                  <span className="text-xl font-bold text-orange-600">{engordeUltimos30.length}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Peso promedio</span>
-                  <span className="text-xl font-bold text-orange-600">{promPeso30d.toFixed(1)} kg</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">GMD promedio</span>
-                  <span className="text-xl font-bold text-orange-600">{promGmd30d.toFixed(2)} kg/día</span>
-                </div>
-                <div className="flex justify-between items-center border-t pt-2">
-                  <span className="text-sm text-gray-600">Total peso (30d)</span>
-                  <span className="text-lg font-semibold text-gray-700">{serieEngordeDia.reduce((acc, d) => acc + d.total, 0).toFixed(1)} kg</span>
+                {/* Gráfica de Tendencia de Engorde */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-semibold mb-4 text-orange-700 flex items-center gap-2">
+                    <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }}></span>
+                    Tendencia de Engorde (kg/día)
+                  </h3>
+                  <MiniBarsSVG data={serieEngordeDia} color="#F59E0B" unit="kg" />
                 </div>
               </div>
-            </div>
-
-            {/* Gráfica de Tendencia de Engorde */}
-            <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4 text-orange-700 flex items-center gap-2">
-                <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }}></span>
-                Tendencia de Engorde (kg/día)
-              </h3>
-              <MiniBarsSVG data={serieEngordeDia} color="#F59E0B" unit="kg" />
             </div>
           </div>
         </div>
