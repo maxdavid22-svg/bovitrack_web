@@ -67,8 +67,8 @@ export default function Home() {
     <div className="space-y-6">
       {/* Header con título */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-8">
-        <div className="flex items-center justify-center gap-6">
-          <img src="/Vaquita.png" alt="Vaquita" className="w-20 h-20 object-contain" />
+        <div className="flex items-center justify-center gap-8">
+          <img src="/Vaquita.png" alt="Vaquita" className="w-32 h-32 object-contain" />
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-2">BoviTrack Web</h1>
             <p className="text-blue-100 text-lg">Sistema de Trazabilidad Ganadera</p>
