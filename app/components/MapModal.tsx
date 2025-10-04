@@ -23,12 +23,14 @@ export default function MapModal({ isOpen, onClose, address, city, department }:
   // URL para OpenStreetMap
   const openStreetMapUrl = `https://www.openstreetmap.org/search?query=${encodeURIComponent(fullAddress)}`;
 
-  // Geocodificación mejorada usando múltiples estrategias
+  // Geocodificación mejorada con validación de precisión
   useEffect(() => {
     if (isOpen && fullAddress) {
       setLoading(true);
       const geocodeAddress = async () => {
         try {
+          let foundCoordinates = null;
+          
           // Estrategia 1: Búsqueda completa con país
           let response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&limit=1&countrycodes=pe&addressdetails=1`
@@ -63,10 +65,24 @@ export default function MapModal({ isOpen, onClose, address, city, department }:
           }
           
           if (data && data.length > 0) {
-            setCoordinates({
+            foundCoordinates = {
               lat: parseFloat(data[0].lat),
               lng: parseFloat(data[0].lon)
-            });
+            };
+          }
+          
+          // Validar si las coordenadas parecen correctas para Lima, Perú
+          // Lima está aproximadamente entre -12.2 a -11.8 lat y -77.2 a -76.7 lng
+          if (foundCoordinates) {
+            const isInLima = foundCoordinates.lat >= -12.2 && foundCoordinates.lat <= -11.8 && 
+                           foundCoordinates.lng >= -77.2 && foundCoordinates.lng <= -76.7;
+            
+            if (isInLima) {
+              setCoordinates(foundCoordinates);
+            } else {
+              // Si las coordenadas no parecen estar en Lima, no las usamos
+              console.log('Coordenadas fuera del rango de Lima, no se mostrarán');
+            }
           }
         } catch (error) {
           console.error('Error geocoding address:', error);
@@ -151,12 +167,12 @@ export default function MapModal({ isOpen, onClose, address, city, department }:
                   title={`Mapa de ${fullAddress}`}
                 />
               ) : (
-                <div className="h-96 bg-gradient-to-br from-yellow-50 to-yellow-100 flex items-center justify-center">
+                <div className="h-96 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
                   <div className="text-center p-6">
                     <div className="text-6xl mb-4">🗺️</div>
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Ubicación no encontrada en OpenStreetMap</h3>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Ver ubicación en Google Maps</h3>
                     <p className="text-gray-600 mb-4">
-                      No se pudo encontrar la ubicación exacta, pero puedes usar los botones de abajo para verla en Google Maps
+                      Para obtener la ubicación más precisa, usa Google Maps que tiene datos más actualizados
                     </p>
                     <div className="bg-white p-4 rounded-lg shadow-sm border">
                       <p className="text-sm text-gray-600">
@@ -167,7 +183,7 @@ export default function MapModal({ isOpen, onClose, address, city, department }:
                     <div className="mt-4">
                       <button
                         onClick={() => handleOpenInMaps(googleMapsUrl)}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium mr-2"
+                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-medium mr-3 text-lg"
                       >
                         🗺️ Ver en Google Maps
                       </button>
@@ -175,8 +191,11 @@ export default function MapModal({ isOpen, onClose, address, city, department }:
                         onClick={() => handleOpenInMaps(openStreetMapUrl)}
                         className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition font-medium"
                       >
-                        🌍 Ver en OpenStreetMap
+                        🌍 OpenStreetMap
                       </button>
+                    </div>
+                    <div className="mt-3 text-xs text-gray-500">
+                      💡 Google Maps tiene la ubicación más precisa para esta dirección
                     </div>
                   </div>
                 </div>
