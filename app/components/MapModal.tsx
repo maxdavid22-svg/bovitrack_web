@@ -74,19 +74,32 @@ export default function MapModal({ isOpen, onClose, address, city, department }:
             </div>
           </div>
 
-          {/* Map Preview */}
+          {/* Embedded Map */}
           <div className="mb-6">
-            <div className="bg-gray-100 rounded-lg p-8 text-center border-2 border-dashed border-gray-300">
-              <div className="text-6xl mb-4">🗺️</div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                {mapType === 'google' ? 'Google Maps' : 'OpenStreetMap'}
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Haz clic en el botón de abajo para abrir la ubicación en {mapType === 'google' ? 'Google Maps' : 'OpenStreetMap'}
-              </p>
-              <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded">
-                <strong>Dirección:</strong> {fullAddress}
-              </div>
+            <div className="bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-300">
+              {mapType === 'google' ? (
+                <iframe
+                  src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dOWWgU6xqZJg&q=${encodeURIComponent(fullAddress)}`}
+                  width="100%"
+                  height="400"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title={`Mapa de ${fullAddress}`}
+                />
+              ) : (
+                <div className="h-96 bg-gray-200 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">🌍</div>
+                    <p className="text-gray-600 mb-4">Mapa OpenStreetMap</p>
+                    <p className="text-sm text-gray-500">Usa el botón de abajo para abrir en OpenStreetMap</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded mt-2">
+              <strong>📍 Dirección:</strong> {fullAddress}
             </div>
           </div>
 
