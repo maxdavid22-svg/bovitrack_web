@@ -337,6 +337,7 @@ export default function PropietariosPage() {
                   <th className="p-4 font-semibold text-gray-700">Contacto</th>
                   <th className="p-4 font-semibold text-gray-700">Ubicación</th>
                   <th className="p-4 font-semibold text-gray-700">Registrado</th>
+                  <th className="p-4 font-semibold text-gray-700">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -433,6 +434,17 @@ export default function PropietariosPage() {
                     </td>
                     <td className="p-4 text-gray-500 text-xs">
                       {new Date(propietario.created_at).toLocaleDateString('es-ES')}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex gap-2">
+                        <a
+                          href={`/editar-propietario/${propietario.id}`}
+                          className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition font-medium"
+                          title="Editar propietario"
+                        >
+                          ✏️ Editar
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 ))}
