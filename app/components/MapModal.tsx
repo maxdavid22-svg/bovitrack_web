@@ -78,28 +78,41 @@ export default function MapModal({ isOpen, onClose, address, city, department }:
           <div className="mb-6">
             <div className="bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-300">
               {mapType === 'google' ? (
-                <iframe
-                  src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dOWWgU6xqZJg&q=${encodeURIComponent(fullAddress)}`}
-                  width="100%"
-                  height="400"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title={`Mapa de ${fullAddress}`}
-                />
+                <div className="h-96 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+                  <div className="text-center p-6">
+                    <div className="text-6xl mb-4">🗺️</div>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Google Maps</h3>
+                    <p className="text-gray-600 mb-4">
+                      Haz clic en el botón de abajo para abrir la ubicación en Google Maps
+                    </p>
+                    <div className="bg-white p-4 rounded-lg shadow-sm border">
+                      <p className="text-sm text-gray-600">
+                        <strong>📍 Ubicación:</strong><br />
+                        {fullAddress}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               ) : (
-                <div className="h-96 bg-gray-200 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-4xl mb-2">🌍</div>
-                    <p className="text-gray-600 mb-4">Mapa OpenStreetMap</p>
-                    <p className="text-sm text-gray-500">Usa el botón de abajo para abrir en OpenStreetMap</p>
+                <div className="h-96 bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+                  <div className="text-center p-6">
+                    <div className="text-6xl mb-4">🌍</div>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">OpenStreetMap</h3>
+                    <p className="text-gray-600 mb-4">
+                      Haz clic en el botón de abajo para abrir la ubicación en OpenStreetMap
+                    </p>
+                    <div className="bg-white p-4 rounded-lg shadow-sm border">
+                      <p className="text-sm text-gray-600">
+                        <strong>📍 Ubicación:</strong><br />
+                        {fullAddress}
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
             </div>
             <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded mt-2">
-              <strong>📍 Dirección:</strong> {fullAddress}
+              <strong>📍 Dirección completa:</strong> {fullAddress}
             </div>
           </div>
 
