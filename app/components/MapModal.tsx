@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface MapModalProps {
   isOpen: boolean;
@@ -10,9 +10,9 @@ interface MapModalProps {
 }
 
 export default function MapModal({ isOpen, onClose, address, city, department }: MapModalProps) {
-  const [mapType, setMapType] = useState<'google' | 'openstreet'>('google');
-
-  if (!isOpen) return null;
+  const [mapType, setMapType] = useState<'google' | 'openstreet'>('openstreet');
+  const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
+  const [loading, setLoading] = useState(false);
 
   // Construir dirección completa
   const fullAddress = [address, city, department].filter(Boolean).join(', ');
@@ -23,9 +23,39 @@ export default function MapModal({ isOpen, onClose, address, city, department }:
   // URL para OpenStreetMap
   const openStreetMapUrl = `https://www.openstreetmap.org/search?query=${encodeURIComponent(fullAddress)}`;
 
+  // Geocodificación usando Nominatim (gratuito)
+  useEffect(() => {
+    if (isOpen && fullAddress) {
+      setLoading(true);
+      const geocodeAddress = async () => {
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&limit=1&countrycodes=pe`
+          );
+          const data = await response.json();
+          
+          if (data && data.length > 0) {
+            setCoordinates({
+              lat: parseFloat(data[0].lat),
+              lng: parseFloat(data[0].lon)
+            });
+          }
+        } catch (error) {
+          console.error('Error geocoding address:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      geocodeAddress();
+    }
+  }, [isOpen, fullAddress]);
+
   const handleOpenInMaps = (url: string) => {
     window.open(url, '_blank');
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -77,33 +107,32 @@ export default function MapModal({ isOpen, onClose, address, city, department }:
           {/* Embedded Map */}
           <div className="mb-6">
             <div className="bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-300">
-              {mapType === 'google' ? (
+              {loading ? (
                 <div className="h-96 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
-                  <div className="text-center p-6">
-                    <div className="text-6xl mb-4">🗺️</div>
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Google Maps</h3>
-                    <p className="text-gray-600 mb-4">
-                      Haz clic en el botón de abajo para abrir la ubicación en Google Maps
-                    </p>
-                    <div className="bg-white p-4 rounded-lg shadow-sm border">
-                      <p className="text-sm text-gray-600">
-                        <strong>📍 Ubicación:</strong><br />
-                        {fullAddress}
-                      </p>
-                    </div>
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Buscando ubicación...</p>
                   </div>
                 </div>
+              ) : coordinates ? (
+                <iframe
+                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${coordinates.lng-0.01},${coordinates.lat-0.01},${coordinates.lng+0.01},${coordinates.lat+0.01}&layer=mapnik&marker=${coordinates.lat},${coordinates.lng}`}
+                  width="100%"
+                  height="400"
+                  style={{ border: 0 }}
+                  title={`Mapa de ${fullAddress}`}
+                />
               ) : (
-                <div className="h-96 bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+                <div className="h-96 bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center">
                   <div className="text-center p-6">
-                    <div className="text-6xl mb-4">🌍</div>
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">OpenStreetMap</h3>
+                    <div className="text-6xl mb-4">❌</div>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Ubicación no encontrada</h3>
                     <p className="text-gray-600 mb-4">
-                      Haz clic en el botón de abajo para abrir la ubicación en OpenStreetMap
+                      No se pudo encontrar la ubicación exacta en el mapa
                     </p>
                     <div className="bg-white p-4 rounded-lg shadow-sm border">
                       <p className="text-sm text-gray-600">
-                        <strong>📍 Ubicación:</strong><br />
+                        <strong>📍 Dirección:</strong><br />
                         {fullAddress}
                       </p>
                     </div>
@@ -113,6 +142,11 @@ export default function MapModal({ isOpen, onClose, address, city, department }:
             </div>
             <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded mt-2">
               <strong>📍 Dirección completa:</strong> {fullAddress}
+              {coordinates && (
+                <span className="ml-2 text-blue-600">
+                  • Coordenadas: {coordinates.lat.toFixed(6)}, {coordinates.lng.toFixed(6)}
+                </span>
+              )}
             </div>
           </div>
 
