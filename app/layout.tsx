@@ -11,7 +11,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header className="bg-white border-b shadow-sm">
           <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="text-2xl">🐄</div>
+              <img src="/Vaquita.png" alt="Vaquita" className="w-8 h-8 object-contain" />
               <div className="font-bold text-xl text-blue-600">BoviTrack</div>
             </div>
             <nav className="flex gap-1 text-sm">

@@ -20,3 +20,6 @@ COMMENT ON COLUMN eventos.peso_kg IS 'Peso en kilogramos medido en evento (p.ej.
 COMMENT ON COLUMN eventos.gmd IS 'Ganancia media diaria estimada (kg/día)';
 
 
+
+
+

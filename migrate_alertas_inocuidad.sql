@@ -165,3 +165,6 @@ CREATE TRIGGER trigger_alertas_eventos
 
 -- Ejecutar función inicial para generar alertas existentes
 SELECT generar_alertas_inocuidad();
+
+
+

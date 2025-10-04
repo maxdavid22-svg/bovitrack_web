@@ -50,3 +50,6 @@ ORDER BY codigo;
 
 -- 8. Limpiar datos de prueba (opcional)
 -- DELETE FROM bovinos WHERE codigo LIKE 'TEST-FINALIDAD-%';
+
+
+
