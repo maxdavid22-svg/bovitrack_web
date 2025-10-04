@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import MapModal from '../components/MapModal';
 
 type Propietario = { 
   id: string; 
@@ -40,6 +41,17 @@ export default function PropietariosPage() {
   const [items, setItems] = useState<Propietario[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState('');
+  const [mapModal, setMapModal] = useState<{
+    isOpen: boolean;
+    address: string;
+    city?: string;
+    department?: string;
+  }>({
+    isOpen: false,
+    address: '',
+    city: '',
+    department: ''
+  });
 
   useEffect(() => {
     cargarPropietarios();
@@ -138,6 +150,26 @@ export default function PropietariosPage() {
     (propietario.email && propietario.email.toLowerCase().includes(filtro.toLowerCase())) ||
     (propietario.ciudad && propietario.ciudad.toLowerCase().includes(filtro.toLowerCase()))
   );
+
+  const handleLocationClick = (propietario: Propietario) => {
+    if (propietario.direccion || propietario.ciudad || propietario.departamento) {
+      setMapModal({
+        isOpen: true,
+        address: propietario.direccion || '',
+        city: propietario.ciudad || '',
+        department: propietario.departamento || ''
+      });
+    }
+  };
+
+  const closeMapModal = () => {
+    setMapModal({
+      isOpen: false,
+      address: '',
+      city: '',
+      department: ''
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -375,13 +407,26 @@ export default function PropietariosPage() {
                     </td>
                     <td className="p-4">
                       <div className="text-xs">
-                        {propietario.ciudad && (
-                          <div className="text-gray-600">📍 {propietario.ciudad}</div>
-                        )}
-                        {propietario.departamento && (
-                          <div className="text-gray-500">{propietario.departamento}</div>
-                        )}
-                        {!propietario.ciudad && !propietario.departamento && (
+                        {(propietario.direccion || propietario.ciudad || propietario.departamento) ? (
+                          <button
+                            onClick={() => handleLocationClick(propietario)}
+                            className="text-left hover:bg-blue-50 p-2 rounded transition-colors group"
+                            title="Hacer clic para ver en mapa"
+                          >
+                            {propietario.direccion && (
+                              <div className="text-gray-600 group-hover:text-blue-600">📍 {propietario.direccion}</div>
+                            )}
+                            {propietario.ciudad && (
+                              <div className="text-gray-600 group-hover:text-blue-600">🏙️ {propietario.ciudad}</div>
+                            )}
+                            {propietario.departamento && (
+                              <div className="text-gray-500 group-hover:text-blue-500">{propietario.departamento}</div>
+                            )}
+                            <div className="text-blue-500 text-xs mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              🗺️ Ver en mapa
+                            </div>
+                          </button>
+                        ) : (
                           <span className="text-gray-400">Sin ubicación</span>
                         )}
                       </div>
@@ -485,6 +530,15 @@ export default function PropietariosPage() {
           </div>
         </div>
       )}
+
+      {/* Map Modal */}
+      <MapModal
+        isOpen={mapModal.isOpen}
+        onClose={closeMapModal}
+        address={mapModal.address}
+        city={mapModal.city}
+        department={mapModal.department}
+      />
     </div>
   );
 }
