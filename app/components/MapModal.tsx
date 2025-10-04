@@ -23,16 +23,44 @@ export default function MapModal({ isOpen, onClose, address, city, department }:
   // URL para OpenStreetMap
   const openStreetMapUrl = `https://www.openstreetmap.org/search?query=${encodeURIComponent(fullAddress)}`;
 
-  // Geocodificación usando Nominatim (gratuito)
+  // Geocodificación mejorada usando múltiples estrategias
   useEffect(() => {
     if (isOpen && fullAddress) {
       setLoading(true);
       const geocodeAddress = async () => {
         try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&limit=1&countrycodes=pe`
+          // Estrategia 1: Búsqueda completa con país
+          let response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&limit=1&countrycodes=pe&addressdetails=1`
           );
-          const data = await response.json();
+          let data = await response.json();
+          
+          // Estrategia 2: Si no encuentra, buscar solo ciudad + departamento
+          if (!data || data.length === 0) {
+            const cityDept = [city, department].filter(Boolean).join(', ');
+            if (cityDept) {
+              response = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityDept + ', Peru')}&limit=1&countrycodes=pe`
+              );
+              data = await response.json();
+            }
+          }
+          
+          // Estrategia 3: Si no encuentra, buscar solo ciudad
+          if (!data || data.length === 0 && city) {
+            response = await fetch(
+              `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city + ', Peru')}&limit=1&countrycodes=pe`
+            );
+            data = await response.json();
+          }
+          
+          // Estrategia 4: Si no encuentra, buscar sin restricción de país
+          if (!data || data.length === 0) {
+            response = await fetch(
+              `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&limit=1`
+            );
+            data = await response.json();
+          }
           
           if (data && data.length > 0) {
             setCoordinates({
@@ -49,7 +77,7 @@ export default function MapModal({ isOpen, onClose, address, city, department }:
       
       geocodeAddress();
     }
-  }, [isOpen, fullAddress]);
+  }, [isOpen, fullAddress, city, department]);
 
   const handleOpenInMaps = (url: string) => {
     window.open(url, '_blank');
@@ -123,18 +151,32 @@ export default function MapModal({ isOpen, onClose, address, city, department }:
                   title={`Mapa de ${fullAddress}`}
                 />
               ) : (
-                <div className="h-96 bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center">
+                <div className="h-96 bg-gradient-to-br from-yellow-50 to-yellow-100 flex items-center justify-center">
                   <div className="text-center p-6">
-                    <div className="text-6xl mb-4">❌</div>
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Ubicación no encontrada</h3>
+                    <div className="text-6xl mb-4">🗺️</div>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Ubicación no encontrada en OpenStreetMap</h3>
                     <p className="text-gray-600 mb-4">
-                      No se pudo encontrar la ubicación exacta en el mapa
+                      No se pudo encontrar la ubicación exacta, pero puedes usar los botones de abajo para verla en Google Maps
                     </p>
                     <div className="bg-white p-4 rounded-lg shadow-sm border">
                       <p className="text-sm text-gray-600">
                         <strong>📍 Dirección:</strong><br />
                         {fullAddress}
                       </p>
+                    </div>
+                    <div className="mt-4">
+                      <button
+                        onClick={() => handleOpenInMaps(googleMapsUrl)}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium mr-2"
+                      >
+                        🗺️ Ver en Google Maps
+                      </button>
+                      <button
+                        onClick={() => handleOpenInMaps(openStreetMapUrl)}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition font-medium"
+                      >
+                        🌍 Ver en OpenStreetMap
+                      </button>
                     </div>
                   </div>
                 </div>
