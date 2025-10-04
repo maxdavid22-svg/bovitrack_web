@@ -66,12 +66,14 @@ export default function Home() {
   return (
     <div className="space-y-6">
       {/* Header con título */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-8 text-center">
-        <div className="flex justify-center mb-4">
-          <img src="/Vaquita.png" alt="Vaquita" className="w-16 h-16 object-contain" />
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-8">
+        <div className="flex items-center justify-center gap-6">
+          <img src="/Vaquita.png" alt="Vaquita" className="w-20 h-20 object-contain" />
+          <div className="text-center">
+            <h1 className="text-4xl font-bold mb-2">BoviTrack Web</h1>
+            <p className="text-blue-100 text-lg">Sistema de Trazabilidad Ganadera</p>
+          </div>
         </div>
-        <h1 className="text-3xl font-bold mb-2">BoviTrack Web</h1>
-        <p className="text-blue-100">Sistema de Trazabilidad Ganadera</p>
       </div>
 
       {/* Estadísticas modernas */}
